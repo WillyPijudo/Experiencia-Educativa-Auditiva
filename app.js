@@ -98,6 +98,24 @@ function playAlerta() {
       closeMenu();
     });
   });
+
+  // ---- Botón "atrás" del celu: muestra el menú en vez de salir de la página ----
+  // Truco: mantenemos siempre un "colchón" en el historial. Cuando el usuario
+  // toca atrás, en vez de dejar la página, se dispara popstate: ahí abrimos
+  // el menú de secciones y volvemos a poner el colchón para la próxima vez.
+  function armBackButton() {
+    history.pushState({ escudoSonoro: true }, "", location.href);
+  }
+  armBackButton();
+
+  window.addEventListener("popstate", () => {
+    if (menu.hidden) {
+      openMenu();
+    } else {
+      closeMenu();
+    }
+    armBackButton();
+  });
 })();
 
 // ---- Simulador de decibeles ----
@@ -122,6 +140,22 @@ function playAlerta() {
   let attenuation = 0;
   let compareOn = false;
   let wasDanger = false;
+
+  // ---- Visualizador circular de decibeles (reemplaza las ondas) ----
+  const vizRing = document.getElementById("vizRing");
+  if (vizRing) {
+    const BARS = 40;
+    vizRing.style.setProperty("--bars", BARS);
+    for (let i = 0; i < BARS; i++) {
+      const bar = document.createElement("span");
+      bar.className = "viz-bar";
+      bar.style.setProperty("--i", i);
+      bar.style.setProperty("--radius", "82px");
+      bar.style.setProperty("--peak", `${14 + Math.round(Math.random() * 20)}px`);
+      bar.style.animationDelay = `${(Math.random() * 1.6).toFixed(2)}s`;
+      vizRing.appendChild(bar);
+    }
+  }
 
   function safeMinutes(effectiveDb) {
     if (effectiveDb <= 80) return Infinity;
@@ -189,6 +223,7 @@ function playAlerta() {
     earStageEl.style.setProperty("--wave-color", risk.color);
     earStageEl.style.setProperty("--wave-speed", `${speed}s`);
     earStageEl.style.setProperty("--wave-max", (2.4 + intensity * 1.8).toFixed(2));
+    earStageEl.style.setProperty("--amp-mult", (0.55 + intensity * 1.1).toFixed(2));
 
     if (risk.key === "danger" && !wasDanger) {
       if (navigator.vibrate) navigator.vibrate([40, 60, 40]);

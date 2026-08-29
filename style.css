@@ -416,7 +416,8 @@ body::before {
   white-space: nowrap;
   transition: border-color 0.2s ease, background 0.2s ease;
 }
-.db-ref:active { border-color: var(--hologram); }
+.db-ref { transition: border-color 0.2s ease, background 0.2s ease, transform 0.15s ease; }
+.db-ref:active { border-color: var(--hologram); transform: scale(0.94); }
 .db-ref-active { border-color: var(--hologram); background: rgba(79,214,255,0.08); }
 .ref-icon { width: 28px; height: 28px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .ref-icon-office { color: var(--mint); }
@@ -456,6 +457,8 @@ body::before {
   transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
 }
 .protect-btn.active { border-color: var(--mint); color: var(--mint); background: rgba(52,224,161,0.1); }
+.protect-btn { transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease, transform 0.15s ease; }
+.protect-btn:active { transform: scale(0.95); }
 
 /* ---- Comparador ---- */
 .compare-btn {
@@ -468,8 +471,9 @@ body::before {
   font-family: var(--font-fun);
   font-size: 13px;
   margin-bottom: 16px;
+  transition: background 0.2s ease, transform 0.15s ease;
 }
-.compare-btn:active { background: rgba(79,214,255,0.08); }
+.compare-btn:active { background: rgba(79,214,255,0.08); transform: scale(0.97); }
 
 .compare-panel {
   display: grid;
@@ -805,46 +809,160 @@ body::before {
 
 
 
-.ear-photo-stage { position: relative; width: 100%; max-width: 132px; margin: 0 auto 54px; aspect-ratio: 496 / 800; }
-.ear-photo { width: 100%; height: 100%; object-fit: contain; display: block; filter: drop-shadow(0 6px 14px rgba(0,0,0,0.45)) saturate(1.08) contrast(1.04); }
-.ear-light {
-  position: absolute; inset: 0; border-radius: 40%;
-  background:
-    radial-gradient(circle at 32% 22%, rgba(255,255,255,0.35), transparent 55%),
-    radial-gradient(circle at 70% 80%, rgba(0,0,0,0.28), transparent 60%);
-  mix-blend-mode: overlay;
+.ear-photo-stage { position: relative; width: 100%; max-width: 196px; margin: 0 auto 60px; aspect-ratio: 1 / 1.2; }
+
+/* ============ VISUALIZADOR CIRCULAR DE DECIBELES ============ */
+.viz-ring {
+  position: absolute;
+  inset: -4%;
+  --bars: 40;
   pointer-events: none;
 }
+.viz-bar {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 3px; height: 10px;
+  border-radius: 2px;
+  background: var(--wave-color, var(--mint));
+  box-shadow: 0 0 7px 0 var(--wave-color, var(--mint));
+  transform-origin: 50% 0;
+  transform: translate(-50%, 0) rotate(calc(360deg / var(--bars) * var(--i, 0))) translateY(var(--radius, 82px));
+  opacity: 0.35;
+  animation: viz-pulse var(--wave-speed, 1.8s) ease-in-out infinite;
+  will-change: height, opacity;
+}
+@keyframes viz-pulse {
+  0%, 100% { height: 7px; opacity: 0.28; }
+  50% { height: calc(var(--peak, 22px) * var(--amp-mult, 0.8)); opacity: 0.95; }
+}
 
-.sound-waves { position: absolute; left: 33%; top: 52%; width: 0; height: 0; pointer-events: none; }
-.wave-ring {
-  position: absolute; left: 0; top: 0;
-  width: 26px; height: 26px;
-  margin-left: -13px; margin-top: -13px;
+/* ============ OÍDO DIBUJADO EN CSS ============ */
+.ear-css {
+  position: absolute;
+  left: 50%; top: 47%;
+  transform: translate(-50%, -50%);
+  width: 62%;
+  height: 84%;
+}
+
+.ear-pinna {
+  position: absolute;
+  inset: 0;
+  border-radius: 46% 54% 54% 46% / 58% 58% 42% 42%;
+  background: linear-gradient(150deg, #f6d7b3 0%, #e6b482 45%, #cd9160 78%, #b87849 100%);
+  box-shadow:
+    inset -10px -12px 18px rgba(120, 66, 34, 0.4),
+    inset 8px 10px 16px rgba(255, 240, 220, 0.55),
+    0 12px 26px rgba(0, 0, 0, 0.45);
+}
+
+.ear-helix {
+  position: absolute;
+  left: 12%; top: 8%;
+  width: 64%; height: 68%;
+  border-radius: 50% 50% 50% 18% / 58% 58% 42% 42%;
+  border: 7px solid rgba(150, 96, 58, 0.5);
+  border-right-color: transparent;
+  border-bottom-color: transparent;
+}
+
+.ear-concha {
+  position: absolute;
+  right: 10%; top: 34%;
+  width: 46%; height: 40%;
+  border-radius: 50% 40% 55% 45%;
+  background: radial-gradient(circle at 40% 35%, rgba(255, 235, 210, 0.35), rgba(120, 66, 34, 0.35) 70%);
+  box-shadow: inset 2px 3px 8px rgba(90, 48, 22, 0.4);
+}
+
+.ear-canal {
+  position: absolute;
+  right: 4%; top: 44%;
+  width: 32%; height: 24%;
   border-radius: 50%;
-  border: 2px solid var(--wave-color, var(--mint));
-  opacity: 0;
-  animation: wave-out var(--wave-speed, 1.8s) ease-out infinite;
-}
-.wave-ring:nth-child(2) { animation-delay: calc(var(--wave-speed, 1.8s) / 3); }
-.wave-ring:nth-child(3) { animation-delay: calc(var(--wave-speed, 1.8s) / 3 * 2); }
-@keyframes wave-out {
-  0% { transform: scale(0.4); opacity: 0.9; }
-  80% { opacity: 0.15; }
-  100% { transform: scale(var(--wave-max, 3.2)); opacity: 0; }
+  background: radial-gradient(circle at 35% 32%, #6b4227, #21100a 78%);
+  box-shadow: inset 0 3px 7px rgba(0, 0, 0, 0.7);
 }
 
-.eq-bars { position: absolute; left: 50%; bottom: -16px; transform: translateX(-50%); display: flex; align-items: flex-end; gap: 3px; height: 14px; }
-.eq-bars span { width: 3px; border-radius: 2px; background: var(--wave-color, var(--mint)); opacity: 0.85; animation: eq-bounce var(--wave-speed, 1.8s) ease-in-out infinite; }
-.eq-bars span:nth-child(1) { height: 40%; animation-delay: 0s; }
-.eq-bars span:nth-child(2) { height: 70%; animation-delay: 0.1s; }
-.eq-bars span:nth-child(3) { height: 100%; animation-delay: 0.2s; }
-.eq-bars span:nth-child(4) { height: 65%; animation-delay: 0.3s; }
-.eq-bars span:nth-child(5) { height: 45%; animation-delay: 0.4s; }
-@keyframes eq-bounce { 0%, 100% { transform: scaleY(0.4); } 50% { transform: scaleY(1); } }
+.ear-drum {
+  position: absolute;
+  right: 12%; top: 51%;
+  width: 11px; height: 11px;
+  border-radius: 50%;
+  background: var(--wave-color, var(--mint));
+  box-shadow: 0 0 10px 3px var(--wave-color, var(--mint));
+  animation: drum-pulse var(--wave-speed, 1.8s) ease-in-out infinite;
+}
+@keyframes drum-pulse {
+  0%, 100% { transform: scale(0.8); opacity: 0.65; }
+  50% { transform: scale(1.18); opacity: 1; }
+}
+
+.ear-lobe {
+  position: absolute;
+  left: 14%; bottom: -8%;
+  width: 32%; height: 26%;
+  border-radius: 50%;
+  background: linear-gradient(160deg, #f2cd9e 0%, #cf9a68 100%);
+  box-shadow: inset -4px -5px 9px rgba(120, 66, 34, 0.35), 0 6px 12px rgba(0, 0, 0, 0.35);
+}
+
+/* ============ EQUIPO DE PROTECCIÓN SOBRE EL OÍDO ============ */
+.protect-band {
+  position: absolute;
+  left: -6%; right: -34%; top: -14%;
+  height: 13px;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #3a4256, #232838);
+  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  transform: translateY(-8px) scale(0.9);
+  transform-origin: center top;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
+}
+.protect-band.active { opacity: 1; transform: translateY(0) scale(1); }
+
+.protect-earmuff {
+  position: absolute;
+  right: -22%; top: 26%;
+  width: 62%; height: 50%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #4d5870, #1a1e2a 75%);
+  border: 3px solid #0d1017;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.55), inset 0 0 0 3px rgba(79, 214, 255, 0.18);
+  opacity: 0;
+  transform: scale(0.65);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
+}
+.protect-earmuff.active { opacity: 1; transform: scale(1); }
+.earmuff-shine {
+  position: absolute;
+  left: 22%; top: 16%;
+  width: 30%; height: 22%;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.28);
+  filter: blur(2px);
+}
+
+.protect-plug {
+  position: absolute;
+  right: 14%; top: 48%;
+  width: 20px; height: 20px;
+  border-radius: 50% 50% 50% 12%;
+  opacity: 0;
+  transform: scale(0.4);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  pointer-events: none;
+  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.45);
+}
+.protect-plug.active { opacity: 1; transform: scale(1); }
+.protect-plug-foam { background: linear-gradient(155deg, #ffd9a0, #f0a95a); }
+.protect-plug-molded { background: linear-gradient(155deg, #9fe8d0, #34c79a); border-radius: 50%; }
 
 .eardrum-label {
-  position: absolute; left: 50%; bottom: -42px;
+  position: absolute; left: 50%; bottom: -30px;
   transform: translateX(-50%);
   font-family: var(--font-mono);
   font-size: 11px; letter-spacing: 2px;
@@ -854,5 +972,5 @@ body::before {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .wave-ring, .eq-bars span { animation: none; opacity: 0.5; }
+  .viz-bar, .ear-drum { animation: none; opacity: 0.6; }
 }
