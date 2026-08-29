@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a0e17">
+<title>Escudo Sonoro — Protección Auditiva</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Fredoka:wght@500;600;700&family=Bungee&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ============ SECUENCIA DE ARRANQUE (holograma) ============ -->
+<div class="boot" id="boot">
+  <div class="boot-grid" aria-hidden="true"></div>
+  <div class="boot-scan" aria-hidden="true"></div>
+
+  <svg class="boot-glyph" viewBox="0 0 200 220" aria-hidden="true">
+    <path class="boot-shield" d="M100 8 L184 40 V106 C184 158 148 197 100 214 C52 197 16 158 16 106 V40 Z"/>
+    <rect class="boot-bar bar-0" x="55" y="130" width="11" height="30" rx="3"/>
+    <rect class="boot-bar bar-1" x="73" y="103" width="11" height="57" rx="3"/>
+    <rect class="boot-bar bar-2" x="91" y="72"  width="11" height="88" rx="3"/>
+    <rect class="boot-bar bar-3" x="109" y="94" width="11" height="66" rx="3"/>
+    <rect class="boot-bar bar-4" x="127" y="114" width="11" height="46" rx="3"/>
+    <rect class="boot-bar bar-5" x="145" y="131" width="11" height="29" rx="3"/>
+  </svg>
+
+  <p class="boot-line" id="bootLine">inicializando escudo sonoro_</p>
+  <button class="boot-enter" id="bootEnter" type="button">Entrar</button>
+</div>
+
+<!-- ============ APP ============ -->
+<div class="app" id="app" hidden>
+
+  <header class="topbar">
+    <span class="topbar-mark">ESCUDO<span>SONORO</span></span>
+  </header>
+
+  <main class="screens" id="screens">
+
+    <!-- INICIO -->
+    <section class="screen" id="screen-inicio" data-screen>
+      <p class="eyebrow">Educación auditiva para el trabajo</p>
+      <h1 class="hero-title">El oído no<br>tiene repuesto.</h1>
+      <p class="hero-sub">Una célula ciliada dañada por ruido no vuelve a crecer. Esta app te muestra, en tiempo real, cuánto tiempo de exposición es seguro y cuánto cambia con protección.</p>
+
+      <div class="stat-card">
+        <span class="stat-number">22%</span>
+        <p class="stat-text">de riesgo de pérdida auditiva irreversible tras 20 años trabajando en el límite legal de ruido, sin protección <span class="stat-src">(ISO 1999)</span></p>
+      </div>
+
+      <button class="cta-btn" data-goto="simulador">Probar el simulador</button>
+    </section>
+
+    <!-- SIMULADOR -->
+    <section class="screen" id="screen-simulador" data-screen hidden>
+      <p class="eyebrow">Simulador de exposición</p>
+      <h2 class="screen-title">¿Cuánto aguanta tu oído?</h2>
+
+      <div class="eardrum-stage">
+        <svg class="eardrum" id="eardrumSvg" viewBox="0 0 200 200" aria-hidden="true">
+          <circle class="ring ring-3" cx="100" cy="100" r="88"/>
+          <circle class="ring ring-2" cx="100" cy="100" r="66"/>
+          <circle class="ring ring-1" cx="100" cy="100" r="44"/>
+          <circle class="membrane" cx="100" cy="100" r="26"/>
+        </svg>
+        <span class="eardrum-label" id="riskLabel">SEGURO</span>
+      </div>
+
+      <div class="slider-block">
+        <div class="slider-readout">
+          <span class="db-value" id="dbValue">70</span><span class="db-unit">dB</span>
+        </div>
+        <input type="range" min="40" max="140" value="70" step="1" id="dbSlider" class="db-slider" aria-label="Nivel de ruido en decibeles">
+        <div class="slider-scale">
+          <span>40</span><span>70</span><span>100</span><span>130</span><span>140</span>
+        </div>
+        <div class="db-refs" id="dbRefs">
+          <button type="button" class="db-ref" data-db="45">Oficina</button>
+          <button type="button" class="db-ref" data-db="80">Taller</button>
+          <button type="button" class="db-ref" data-db="100">Taladro</button>
+          <button type="button" class="db-ref" data-db="115">Amoladora</button>
+          <button type="button" class="db-ref" data-db="130">Martillo neumático</button>
+        </div>
+      </div>
+
+      <label class="protect-toggle">
+        <span class="protect-label">Protección auditiva</span>
+        <input type="checkbox" id="protectSwitch">
+        <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
+        <span class="protect-state" id="protectState">Desactivada</span>
+      </label>
+
+      <div class="readout-grid">
+        <div class="readout-card">
+          <span class="readout-label">Nivel efectivo</span>
+          <span class="readout-value" id="effectiveDb">70 dB</span>
+        </div>
+        <div class="readout-card">
+          <span class="readout-label">Tiempo seguro</span>
+          <span class="readout-value" id="safeTime">8 h</span>
+        </div>
+      </div>
+      <p class="readout-note" id="readoutNote">Con este nivel podés trabajar la jornada completa sin riesgo.</p>
+    </section>
+
+    <!-- OÍDO 3D (stub) -->
+    <section class="screen" id="screen-oido" data-screen hidden>
+      <p class="eyebrow">Anatomía</p>
+      <h2 class="screen-title">Modelo del oído</h2>
+      <div class="stub-card">
+        <svg class="stub-icon" viewBox="0 0 100 100" aria-hidden="true">
+          <path d="M50 12c-20 0-34 16-34 36 0 16 9 22 9 34 0 8 6 14 14 14 7 0 11-5 11-11 0-5-4-7-4-13 0-5 4-8 4-15 0-6-6-9-6-16 0-8 8-13 16-9 6 3 9 10 9 18" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+        </svg>
+        <span class="stub-tag">Próximamente</span>
+        <p class="stub-text">Un modelo 3D navegable del oído externo, medio e interno, con cada parte explicada al tocarla.</p>
+      </div>
+    </section>
+
+    <!-- TEST (stub) -->
+    <section class="screen" id="screen-test" data-screen hidden>
+      <p class="eyebrow">Evaluación</p>
+      <h2 class="screen-title">Test y certificado</h2>
+      <div class="stub-card">
+        <svg class="stub-icon" viewBox="0 0 100 100" aria-hidden="true">
+          <path d="M28 20h44v60l-22-12-22 12z" fill="none" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>
+          <path d="M38 42l8 8 16-16" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="stub-tag">Próximamente</span>
+        <p class="stub-text">Preguntas cortas sobre protección auditiva y una constancia descargable al terminar.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Botón escudo: navegación principal -->
+  <button class="shield-nav" id="shieldNav" type="button" aria-label="Abrir menú">
+    <svg viewBox="0 0 200 220" aria-hidden="true">
+      <path class="shield-nav-outline" d="M100 8 L184 40 V106 C184 158 148 197 100 214 C52 197 16 158 16 106 V40 Z"/>
+      <rect x="60" y="128" width="9" height="26" rx="2.5" class="shield-nav-bar"/>
+      <rect x="77" y="106" width="9" height="48" rx="2.5" class="shield-nav-bar"/>
+      <rect x="94" y="80"  width="9" height="74" rx="2.5" class="shield-nav-bar"/>
+      <rect x="111" y="98" width="9" height="56" rx="2.5" class="shield-nav-bar"/>
+      <rect x="128" y="118" width="9" height="36" rx="2.5" class="shield-nav-bar"/>
+    </svg>
+  </button>
+
+  <!-- Menú -->
+  <nav class="menu" id="menu" hidden>
+    <div class="menu-grid" aria-hidden="true"></div>
+    <button class="menu-close" id="menuClose" type="button" aria-label="Cerrar menú">Cerrar</button>
+    <ul class="menu-list">
+      <li><button type="button" data-goto="inicio">Inicio</button></li>
+      <li><button type="button" data-goto="simulador">Simulador de exposición</button></li>
+      <li><button type="button" data-goto="oido">Modelo del oído<span class="tag">Próx.</span></button></li>
+      <li><button type="button" data-goto="test">Test y certificado<span class="tag">Próx.</span></button></li>
+    </ul>
+  </nav>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
