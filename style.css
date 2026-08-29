@@ -801,3 +801,67 @@ body::before {
   pointer-events: none;
 }
 .ear3d-play { margin-bottom: 14px; }
+
+
+
+
+.ear-photo-stage { position: relative; width: 100%; max-width: 220px; margin: 0 auto 30px; aspect-ratio: 496 / 800; }
+.ear-photo { width: 100%; height: 100%; object-fit: contain; display: block; filter: drop-shadow(0 8px 20px rgba(0,0,0,0.4)); }
+
+.ear-glow {
+  position: absolute; left: 33%; top: 52%;
+  width: 20%; height: 13%;
+  border-radius: 50%;
+  background: var(--mint);
+  opacity: 0.55;
+  filter: blur(5px);
+  transform: translate(-50%, -50%) scale(1);
+  animation: glow-pulse var(--ring-speed, 1.8s) ease-in-out infinite;
+  transition: background 0.3s ease;
+  pointer-events: none;
+}
+@keyframes glow-pulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -50%) scale(var(--ring-amp, 1.15)); }
+}
+
+.protect-band {
+  position: absolute; left: 6%; right: 6%; top: -4%; height: 14px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #3a3f4a, #14161a);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+  opacity: 0; transform: scaleX(0.7);
+  transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.2,0.9,0.25,1.15);
+}
+.protect-band.active { opacity: 1; transform: scaleX(1); }
+
+.protect-earmuff {
+  position: absolute; left: 8%; top: 30%; width: 62%; height: 40%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #454b58, #14161a 75%);
+  box-shadow: 0 10px 22px rgba(0,0,0,0.5), inset 0 -6px 12px rgba(0,0,0,0.4), inset 0 5px 8px rgba(255,255,255,0.08);
+  opacity: 0; transform: scale(0.6);
+  transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.2,0.9,0.25,1.2);
+}
+.protect-earmuff.active { opacity: 0.96; transform: scale(1); }
+
+.protect-plug {
+  position: absolute; left: 33%; top: 52%; width: 15%; height: 10%;
+  border-radius: 50%;
+  transform: translate(-50%, calc(-50% - 14px)) scale(0.5);
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.2,0.9,0.25,1.2);
+}
+.protect-plug.active { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+.protect-plug-foam { background: radial-gradient(circle at 35% 30%, #ffe3c4, #d99a5b 75%); box-shadow: 0 3px 6px rgba(0,0,0,0.4), inset 0 -2px 4px rgba(0,0,0,0.3); }
+.protect-plug-molded { background: radial-gradient(circle at 35% 30%, #d7ecff, #6fa8dc 75%); box-shadow: 0 3px 6px rgba(0,0,0,0.4), inset 0 -2px 4px rgba(0,0,0,0.3); }
+
+.eardrum-label {
+  position: absolute; left: 50%; bottom: -22px;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 11px; letter-spacing: 2px;
+  color: var(--mint);
+  transition: color 0.3s ease;
+  white-space: nowrap;
+}
