@@ -36,7 +36,7 @@ body {
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
-  touch-action: manipulation; /* saca el delay de 300ms al tocar en mobile */
+  touch-action: manipulation;
 }
 h1, h2, h3 { margin: 0; font-family: var(--font-display); }
 p { margin: 0; }
@@ -49,7 +49,6 @@ button {
 }
 ul { list-style: none; margin: 0; padding: 0; }
 
-/* Fondo ambiental: una veta de luz muy tenue, en toda la app */
 body::before {
   content: "";
   position: fixed;
@@ -62,7 +61,7 @@ body::before {
 }
 
 /* ==========================================================
-   BOOT — secuencia holográfica de arranque
+   BOOT
    ========================================================== */
 .boot {
   position: fixed;
@@ -81,14 +80,6 @@ body::before {
 .boot.boot-hide { animation: boot-fade-out 0.6s ease forwards; }
 @keyframes boot-fade-out { to { opacity: 0; visibility: hidden; } }
 
-/* IMPORTANTE: estos elementos son puramente decorativos (fondo del
-   arranque) y por eso llevan pointer-events:none. Antes no lo tenían,
-   y un div transparente cubriendo toda la pantalla -aunque no se
-   "vea"- igual tapa los toques. Ese era el bug de los botones en el
-   celular: en mobile Safari, un fondo con transform 3D (el grid con
-   perspective/rotateX que tenía antes) puede además calcular su
-   "zona de toque" mal, tapando justo donde estaba el botón "Entrar".
-   Por eso también lo cambié por una versión 2D, más simple y segura. */
 .boot-grid {
   position: absolute;
   inset: 0;
@@ -427,45 +418,72 @@ body::before {
 }
 .db-ref:active { border-color: var(--hologram); color: var(--hologram); }
 
-.protect-toggle {
-  display: flex;
-  align-items: center;
+/* ---- Selector de protección ---- */
+.protect-block { margin-bottom: 16px; }
+.protect-title { display: block; font-size: 14px; font-family: var(--font-fun); margin-bottom: 10px; }
+.protect-types { display: flex; gap: 8px; flex-wrap: wrap; }
+.protect-btn {
+  flex: 1 1 calc(50% - 8px);
+  padding: 11px 8px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--ink-2);
+  color: var(--mist);
+  font-family: var(--font-fun);
+  font-size: 12px;
+  transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+}
+.protect-btn.active { border-color: var(--mint); color: var(--mint); background: rgba(52,224,161,0.1); }
+
+/* ---- Comparador ---- */
+.compare-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px dashed var(--border);
+  background: transparent;
+  color: var(--hologram);
+  font-family: var(--font-fun);
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+.compare-btn:active { background: rgba(79,214,255,0.08); }
+
+.compare-panel {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 12px;
-  padding: 14px 16px;
+  margin-bottom: 18px;
+}
+.compare-col {
   background: var(--ink-2);
   border: 1px solid var(--border);
   border-radius: 14px;
-  margin-bottom: 18px;
-  position: relative;
+  padding: 16px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
 }
-.protect-label { font-size: 14px; flex: 1; font-family: var(--font-fun); }
-.protect-toggle input { position: absolute; opacity: 0; width: 0; height: 0; }
-.switch-track {
-  width: 46px; height: 26px;
-  border-radius: 999px;
-  background: var(--ink-3);
-  border: 1px solid var(--border);
-  position: relative;
-  flex-shrink: 0;
-  transition: background 0.25s ease;
-}
-.switch-thumb {
-  position: absolute;
-  top: 2px; left: 2px;
-  width: 20px; height: 20px;
+.compare-label { font-size: 10px; color: var(--mist); font-family: var(--font-mono); letter-spacing: 0.5px; }
+.mini-eardrum {
+  width: 56px; height: 56px;
   border-radius: 50%;
-  background: var(--mist);
-  transition: transform 0.25s ease, background 0.25s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
 }
-.protect-toggle input:checked ~ .switch-track { background: rgba(52,224,161,0.25); border-color: var(--mint); }
-.protect-toggle input:checked ~ .switch-track .switch-thumb { transform: translateX(20px); background: var(--mint); }
-.protect-state {
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  color: var(--mist);
-  width: 68px;
-  text-align: right;
+.mini-dot {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: var(--mint);
+  transition: background 0.3s ease;
+  animation: membrane-pulse var(--ring-speed, 1.8s) ease-in-out infinite;
 }
+.compare-db { font-family: var(--font-mono); font-size: 15px; }
+.compare-risk { font-family: var(--font-mono); font-size: 10px; letter-spacing: 1.5px; color: var(--mint); }
 
 .readout-grid {
   display: grid;
@@ -485,6 +503,28 @@ body::before {
 .readout-label { font-size: 10.5px; letter-spacing: 1px; color: var(--mist); text-transform: uppercase; }
 .readout-value { font-family: var(--font-mono); font-size: 19px; }
 .readout-note { font-size: 12.5px; color: var(--mist); line-height: 1.5; }
+
+/* ---- EPP ---- */
+.epp-list { display: flex; flex-direction: column; gap: 12px; }
+.epp-card {
+  background: var(--ink-2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 18px;
+}
+.epp-card h3 { font-size: 16px; margin: 8px 0 6px; font-family: var(--font-display); }
+.epp-card p { font-size: 13px; color: var(--mist); line-height: 1.5; }
+.epp-atten {
+  font-family: var(--font-poster);
+  font-size: 12px;
+  color: var(--ink);
+  background: var(--hologram);
+  padding: 4px 10px;
+  border-radius: 999px;
+  display: inline-block;
+}
+.epp-card-double { border-color: var(--signal); }
+.epp-card-double .epp-atten { background: var(--signal); }
 
 /* ---- Stubs (Oído 3D / Test) ---- */
 .stub-card {
