@@ -296,12 +296,15 @@
 </div>
 
 <div class="ear-view" id="earView3D" hidden>
-  <div class="ear3d-wrap" id="ear3dWrap">
-    <canvas id="ear3dCanvas"></canvas>
-    <div class="ear3d-hint">Arrastrá para rotar · pellizcá para zoom</div>
+  <div class="sketchfab-embed-wrapper">
+    <iframe title="Ear Anatomy" frameborder="0" allowfullscreen mozallowfullscreen="true" webkitallowfullscreen="true" allow="autoplay; fullscreen; xr-spatial-tracking" xr-spatial-tracking execution-while-out-of-viewport execution-while-not-rendered web-share src="https://sketchfab.com/models/72cfec30bcd9408da4aedc4b66eca19b/embed?preload=1&dnt=1"></iframe>
+    <p class="sketchfab-credit">
+      <a href="https://sketchfab.com/3d-models/ear-anatomy-72cfec30bcd9408da4aedc4b66eca19b" target="_blank" rel="nofollow">Ear Anatomy</a>
+      por <a href="https://sketchfab.com/Deepak_Sharma" target="_blank" rel="nofollow">Deepak_Sharma</a>
+      en <a href="https://sketchfab.com" target="_blank" rel="nofollow">Sketchfab</a>
+    </p>
   </div>
-  <button type="button" class="cta-btn ear3d-play" id="ear3dPlay">Reproducir recorrido del sonido</button>
-  <p class="ear-zone-desc" id="ear3dDesc">Tocá cualquier parte del modelo para ver qué hace, o arrastrá para girarlo.</p>
+  <p class="ear-zone-desc">Arrastrá para rotar el modelo, pellizcá para acercar. Tocá el ícono de capas dentro del visor para separar oído externo, medio e interno.</p>
 </div>
 
   <div class="cilia-panel">
@@ -368,8 +371,6 @@
 
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
