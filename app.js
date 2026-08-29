@@ -125,6 +125,13 @@
     }
     wasDanger = risk.key === "danger";
 
+        let closestBtn = null, closestDiff = Infinity;
+    refButtons.forEach((btn) => {
+      const diff = Math.abs(rawDb - Number(btn.dataset.db));
+      if (diff < closestDiff) { closestDiff = diff; closestBtn = btn; }
+    });
+    refButtons.forEach((btn) => btn.classList.toggle("db-ref-active", btn === closestBtn && closestDiff <= 4));
+
     if (compareOn) updateCompare(rawDb);
   }
 
