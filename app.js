@@ -87,7 +87,25 @@ function playAlerta() {
   }
 
   function openMenu() { menu.hidden = false; }
-  function closeMenu() { menu.hidden = true; }
+  function closeMenu() {
+    menu.hidden = true;
+    if (menuCube) menuCube.classList.remove("flipped");
+    pagerDots.forEach((d, i) => d.classList.toggle("active", i === 0));
+    if (menuPageBtn) menuPageBtn.textContent = "Más secciones ⟩";
+  }
+
+  // ---- Cubo de menú: dos caras con más secciones/herramientas ----
+  const menuCube = document.getElementById("menuCube");
+  const menuPageBtn = document.getElementById("menuPageBtn");
+  const pagerDots = [document.getElementById("menuDot0"), document.getElementById("menuDot1")];
+  if (menuPageBtn && menuCube) {
+    menuPageBtn.addEventListener("click", () => {
+      const goingBack = menuCube.classList.contains("flipped");
+      menuCube.classList.toggle("flipped");
+      pagerDots.forEach((d, i) => d.classList.toggle("active", goingBack ? i === 0 : i === 1));
+      menuPageBtn.textContent = goingBack ? "Más secciones ⟩" : "⟨ Secciones principales";
+    });
+  }
 
   let navClickTimer = null;
   let navDimmed = false;
@@ -415,7 +433,15 @@ function playAlerta() {
     truefalse: "Verdadero o falso",
     order: "Ordenar",
     slider: "Estimar",
+    scenario: "Comparar escenarios",
+    timeline: "Línea de tiempo",
   };
+
+  function riskColor(effectiveDb) {
+    if (effectiveDb <= 85) return "var(--mint)";
+    if (effectiveDb <= 105) return "var(--hologram)";
+    return "var(--signal)";
+  }
 
   // ---- Banco de preguntas (se arma un test nuevo y random cada vez) ----
   const BANK = [
@@ -448,6 +474,26 @@ function playAlerta() {
 
     { type: "slider", q: "¿Cuántos decibeles tiene aproximadamente una amoladora en uso?", target: 115, tolerance: 10, min: 60, max: 140, explain: "Una amoladora ronda los 115 dB: a ese nivel, el daño puede ser cuestión de minutos sin protección." },
     { type: "slider", q: "¿Cuál es, aproximadamente, el límite legal habitual de ruido para una jornada de 8 horas?", target: 85, tolerance: 5, min: 40, max: 120, explain: "85 dB en 8 horas es el valor de referencia más usado como umbral de acción." },
+
+    { type: "scenario", q: "Estos tres trabajadores están en sus puestos ahora mismo. ¿Cuál corre MENOS riesgo auditivo?",
+      scenarios: [
+        { label: "Amoladora, sin protección", effective: 115, protected: false },
+        { label: "Amoladora, doble protección", effective: 83, protected: true },
+        { label: "Oficina, sin protección", effective: 45, protected: false },
+      ], correct: 2, explain: "La oficina a 45 dB no representa riesgo. El de doble protección bajó bastante su exposición, pero sigue siendo más alta que la oficina." },
+    { type: "scenario", q: "Mismo puesto de taladro (100 dB), tres formas distintas de trabajar. ¿Cuál es la más riesgosa?",
+      scenarios: [
+        { label: "Con orejeras", effective: 78, protected: true },
+        { label: "Con tapones de espuma", effective: 75, protected: true },
+        { label: "Sin ninguna protección", effective: 100, protected: false },
+      ], correct: 2, explain: "Sin protección, 100 dB puede dañar el oído en minutos. Cualquiera de las dos protecciones baja el riesgo a un nivel seguro." },
+
+    { type: "timeline", q: "Un trabajador está expuesto a 100 dB, sin protección, 8 horas por día, todos los días. ¿En cuánto tiempo el daño en las células ciliadas suele volverse severo?",
+      options: ["Unas pocas horas", "2 a 5 años", "15 a 20 años", "El oído se acostumbra y no se daña"],
+      correct: 1, explain: "El daño es acumulativo: a niveles altos y constantes, el deterioro serio puede instalarse en pocos años — mucho antes de lo que la mayoría cree." },
+    { type: "timeline", q: "Ese mismo trabajador empieza a usar protección adecuada todos los días. ¿Qué pasa con el daño ya acumulado?",
+      options: ["Se revierte con el tiempo", "Se frena: no se suma daño nuevo, pero lo perdido no vuelve", "Sigue avanzando igual de rápido", "Depende de la marca de la protección"],
+      correct: 1, explain: "La protección no repara nada: evita que se sume MÁS daño. Lo que ya se perdió, no se recupera." },
   ];
 
   const TOTAL_QUESTIONS = 8;
@@ -462,7 +508,9 @@ function playAlerta() {
       ...byType("truefalse").slice(0, 2),
       ...byType("order").slice(0, 1),
       ...byType("slider").slice(0, 1),
-      ...byType("mcq").slice(0, TOTAL_QUESTIONS - 4),
+      ...byType("scenario").slice(0, 1),
+      ...byType("timeline").slice(0, 1),
+      ...byType("mcq").slice(0, TOTAL_QUESTIONS - 6),
     ];
     return shuffle(picked).map((item) => {
       if (item.type === "mcq") {
@@ -638,6 +686,52 @@ function playAlerta() {
     optionsEl.appendChild(confirmBtn);
   }
 
+  function renderScenario(item) {
+    const grid = document.createElement("div");
+    grid.className = "scenario-grid";
+    item.scenarios.forEach((sc, i) => {
+      const card = document.createElement("button");
+      card.type = "button";
+      card.className = "scenario-card";
+      const color = riskColor(sc.effective);
+      const muffs = sc.protected
+        ? '<rect x="8" y="9" width="13" height="17" rx="5" class="figure-muff"/><rect x="39" y="9" width="13" height="17" rx="5" class="figure-muff"/>'
+        : "";
+      card.innerHTML = `
+        <span class="scenario-risk-dot" style="background:${color}; color:${color};"></span>
+        <svg viewBox="0 0 60 90" class="scenario-figure-svg" aria-hidden="true">
+          <circle cx="30" cy="18" r="14" class="figure-head"/>
+          <rect x="14" y="34" width="32" height="46" rx="14" class="figure-body"/>
+          ${muffs}
+        </svg>
+        <span class="scenario-label">${sc.label}</span>
+        <span class="scenario-db" style="color:${color};">${sc.effective} dB efectivos</span>`;
+      card.addEventListener("click", () => {
+        if (answered) return;
+        [...grid.children].forEach((c, idx) => {
+          c.disabled = true;
+          if (idx === item.correct) c.classList.add("quiz-correct");
+          else if (idx === i) c.classList.add("quiz-incorrect");
+        });
+        completeQuestion(i === item.correct, item.explain);
+      });
+      grid.appendChild(card);
+    });
+    optionsEl.appendChild(grid);
+  }
+
+  function renderTimelineViz() {
+    const viz = document.createElement("div");
+    viz.className = "mini-cilia-row";
+    for (let i = 0; i < 14; i++) {
+      const hair = document.createElement("span");
+      hair.className = "mini-cilia-hair";
+      hair.style.animationDelay = `${(i * 0.12).toFixed(2)}s`;
+      viz.appendChild(hair);
+    }
+    optionsEl.appendChild(viz);
+  }
+
   function renderQuestion() {
     answered = false;
     feedbackEl.hidden = true;
@@ -656,6 +750,8 @@ function playAlerta() {
     else if (item.type === "truefalse") renderTrueFalse(item);
     else if (item.type === "order") renderOrder(item);
     else if (item.type === "slider") renderSlider(item);
+    else if (item.type === "scenario") renderScenario(item);
+    else if (item.type === "timeline") { renderTimelineViz(); renderMCQ(item); }
   }
 
   function showResult() {
