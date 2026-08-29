@@ -644,3 +644,67 @@ body::before {
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
+
+
+
+/* ---- Modelo del oído ---- */
+.ear-diagram-wrap { margin-bottom: 14px; }
+.ear-diagram { width: 100%; height: auto; color: var(--mist); }
+.ear-zone { fill: var(--mist); stroke: var(--mist); opacity: 0.4; transition: opacity 0.3s ease, color 0.3s ease; }
+.ear-zone.zone-active { opacity: 1; color: var(--hologram); stroke: var(--hologram); fill: var(--hologram); }
+
+.ear-zone-buttons { display: flex; gap: 8px; margin-bottom: 12px; }
+.ear-zone-btn {
+  flex: 1;
+  padding: 9px 6px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--ink-2);
+  color: var(--mist);
+  font-family: var(--font-fun);
+  font-size: 11.5px;
+}
+.ear-zone-btn.active { border-color: var(--hologram); color: var(--hologram); }
+.ear-zone-desc { font-size: 13px; color: var(--mist); line-height: 1.5; margin-bottom: 22px; }
+
+.cilia-panel { background: var(--ink-2); border: 1px solid var(--border); border-radius: 18px; padding: 18px; }
+.cilia-title { font-size: 15px; margin-bottom: 10px; }
+.cilia-svg { width: 100%; height: auto; margin-bottom: 10px; }
+.cilia-hair {
+  stroke: var(--mint);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  transform-origin: bottom center;
+  transform-box: fill-box;
+  animation: hair-wave 2.4s ease-in-out infinite;
+  transition: stroke 0.4s ease, transform 0.4s ease, opacity 0.4s ease;
+}
+@keyframes hair-wave { 0%, 100% { transform: rotate(-2deg); } 50% { transform: rotate(2deg); } }
+.cilia-hair.cilia-damaged { stroke: var(--mist); animation: none; transform: rotate(58deg); opacity: 0.55; }
+.cilia-base { stroke: var(--border); stroke-width: 2; }
+.cilia-slider-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.cilia-slider { flex: 1; -webkit-appearance: none; height: 6px; border-radius: 999px; background: linear-gradient(90deg, var(--mint), var(--signal)); }
+.cilia-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: var(--paper); border: 3px solid var(--ink); box-shadow: 0 0 0 2px var(--hologram); }
+.cilia-slider::-moz-range-thumb { width: 22px; height: 22px; border-radius: 50%; background: var(--paper); border: 3px solid var(--ink); box-shadow: 0 0 0 2px var(--hologram); }
+.cilia-years { font-family: var(--font-mono); font-size: 12px; color: var(--mist); width: 56px; text-align: right; }
+.cilia-note { font-size: 12.5px; color: var(--mist); line-height: 1.5; margin-bottom: 12px; }
+.cilia-reset { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid var(--border); background: transparent; color: var(--mist); font-family: var(--font-fun); font-size: 12.5px; }
+.cilia-reset:active { border-color: var(--signal); color: var(--signal); }
+
+/* ---- Quiz ---- */
+.quiz-card { background: var(--ink-2); border: 1px solid var(--border); border-radius: 18px; padding: 20px; }
+.quiz-progress { height: 4px; border-radius: 999px; background: var(--ink-3); margin-bottom: 12px; overflow: hidden; }
+.quiz-progress-fill { display: block; height: 100%; background: var(--hologram); transition: width 0.3s ease; width: 0%; }
+.quiz-counter { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 1px; color: var(--mist); margin-bottom: 14px; }
+.quiz-question { font-size: 16px; line-height: 1.4; margin-bottom: 16px; font-family: var(--font-fun); }
+.quiz-options { display: flex; flex-direction: column; gap: 8px; }
+.quiz-option { text-align: left; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border); background: var(--ink-3); color: var(--paper); font-size: 13.5px; }
+.quiz-option:active { border-color: var(--hologram); }
+.quiz-option.quiz-correct { border-color: var(--mint); background: rgba(52,224,161,0.12); color: var(--mint); }
+.quiz-option.quiz-incorrect { border-color: var(--signal); background: rgba(255,92,122,0.12); color: var(--signal); }
+.quiz-feedback { font-size: 13px; color: var(--mist); line-height: 1.5; margin-top: 14px; }
+.quiz-feedback strong { color: var(--paper); }
+.quiz-next { margin-top: 14px; }
+.quiz-result { background: var(--ink-2); border: 1px solid var(--border); border-radius: 18px; padding: 30px 20px; text-align: center; }
+.quiz-result-score { font-family: var(--font-poster); font-size: 40px; color: var(--hologram); display: block; margin-bottom: 10px; }
+.quiz-result-text { font-size: 13.5px; color: var(--mist); line-height: 1.5; margin-bottom: 18px; }
