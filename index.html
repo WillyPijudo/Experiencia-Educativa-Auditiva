@@ -91,12 +91,33 @@
         </div>
       </div>
 
-      <label class="protect-toggle">
-        <span class="protect-label">Protección auditiva</span>
-        <input type="checkbox" id="protectSwitch">
-        <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
-        <span class="protect-state" id="protectState">Desactivada</span>
-      </label>
+      <div class="protect-block">
+        <span class="protect-title">Protección auditiva</span>
+        <div class="protect-types" id="protectTypes">
+          <button type="button" class="protect-btn active" data-atten="0">Ninguna</button>
+          <button type="button" class="protect-btn" data-atten="25">Tapones espuma</button>
+          <button type="button" class="protect-btn" data-atten="22">Orejeras</button>
+          <button type="button" class="protect-btn" data-atten="28">Tapones moldeados</button>
+          <button type="button" class="protect-btn" data-atten="32">Doble protección</button>
+        </div>
+      </div>
+
+      <button class="compare-btn" id="compareBtn" type="button">Comparar con / sin protección</button>
+
+      <div class="compare-panel" id="comparePanel" hidden>
+        <div class="compare-col">
+          <span class="compare-label">SIN PROTECCIÓN</span>
+          <div class="mini-eardrum" id="miniNone"><span class="mini-dot"></span></div>
+          <span class="compare-db" id="compareDbNone">70 dB</span>
+          <span class="compare-risk" id="compareRiskNone">SEGURO</span>
+        </div>
+        <div class="compare-col">
+          <span class="compare-label">CON PROTECCIÓN</span>
+          <div class="mini-eardrum" id="miniProt"><span class="mini-dot"></span></div>
+          <span class="compare-db" id="compareDbProt">70 dB</span>
+          <span class="compare-risk" id="compareRiskProt">SEGURO</span>
+        </div>
+      </div>
 
       <div class="readout-grid">
         <div class="readout-card">
@@ -109,6 +130,36 @@
         </div>
       </div>
       <p class="readout-note" id="readoutNote">Con este nivel podés trabajar la jornada completa sin riesgo.</p>
+    </section>
+
+    <!-- EPP -->
+    <section class="screen" id="screen-epp" data-screen hidden>
+      <p class="eyebrow">Equipos de protección</p>
+      <h2 class="screen-title">Elegí tu protección</h2>
+      <p class="hero-sub">Valores de atenuación aproximados, con fines educativos. El equipo real que te da tu empresa trae su propio dato en la etiqueta.</p>
+
+      <div class="epp-list">
+        <div class="epp-card">
+          <span class="epp-atten">−25 dB</span>
+          <h3>Tapones de espuma</h3>
+          <p>Se expanden dentro del oído. Livianos y descartables. Ideales para turnos largos y espacios calurosos.</p>
+        </div>
+        <div class="epp-card">
+          <span class="epp-atten">−22 dB</span>
+          <h3>Orejeras</h3>
+          <p>Cubren toda la oreja. Fáciles de poner y sacar seguido — buenas para tareas que alternan silencio y ruido.</p>
+        </div>
+        <div class="epp-card">
+          <span class="epp-atten">−28 dB</span>
+          <h3>Tapones moldeados</h3>
+          <p>Hechos a medida del oído de cada persona. Más cómodos en uso prolongado, mayor costo inicial.</p>
+        </div>
+        <div class="epp-card epp-card-double">
+          <span class="epp-atten">−32 dB</span>
+          <h3>Doble protección</h3>
+          <p>Tapones + orejeras juntos. Se usa en los puntos más ruidosos de la planta (110 dB o más).</p>
+        </div>
+      </div>
     </section>
 
     <!-- OÍDO 3D (stub) -->
@@ -159,6 +210,7 @@
     <ul class="menu-list">
       <li><button type="button" data-goto="inicio">Inicio</button></li>
       <li><button type="button" data-goto="simulador">Simulador de exposición</button></li>
+      <li><button type="button" data-goto="epp">Equipos de protección</button></li>
       <li><button type="button" data-goto="oido">Modelo del oído<span class="tag">Próx.</span></button></li>
       <li><button type="button" data-goto="test">Test y certificado<span class="tag">Próx.</span></button></li>
     </ul>
