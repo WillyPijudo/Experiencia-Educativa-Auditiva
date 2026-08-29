@@ -37,6 +37,20 @@ document.addEventListener("click", (e) => {
 });
 
 
+function playAlerta() {
+  const audio = SOUND.alerta;
+  try {
+    audio.currentTime = 0;
+    audio.play().catch(() => {});
+    clearTimeout(audio._stopTimer);
+    audio._stopTimer = setTimeout(() => {
+      audio.pause();
+      audio.currentTime = 0;
+    }, 1200);
+  } catch (e) {}
+}
+
+
 
 (function boot() {
   const bootEl = document.getElementById("boot");
