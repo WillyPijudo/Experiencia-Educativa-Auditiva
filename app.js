@@ -854,7 +854,7 @@ function playAlerta() {
   const certCinema = document.getElementById("certCinema");
   const certCinemaText = document.getElementById("certCinemaText");
 
-  const SHEET_WEBAPP_URL = "PEGÁ_ACÁ_LA_URL_DE_TU_APPS_SCRIPT"; // ver instrucciones abajo
+  const SHEET_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyav3-HETOJY0AqoypCOyI5oKTfO7fLcHXiviWb8DTJzFGWDmMzw5S3HACje0k_ub0yqw/exec";
 
   function sendCertRecord(name, scoreValue, totalValue, code) {
     if (!SHEET_WEBAPP_URL || SHEET_WEBAPP_URL.includes("PEGÁ_ACÁ")) return;
