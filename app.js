@@ -161,14 +161,23 @@ function playAlerta() {
   // ---- Visualizador circular de decibeles (reemplaza las ondas) ----
   const vizRing = document.getElementById("vizRing");
   if (vizRing) {
+    // Track de zonas de riesgo (verde/ámbar/rojo) detrás de las barras, si el HTML no lo trae ya
+    if (earStageEl && !earStageEl.querySelector(".viz-track")) {
+      const track = document.createElement("div");
+      track.className = "viz-track";
+      earStageEl.insertBefore(track, vizRing);
+    }
+
     const BARS = 40;
     vizRing.style.setProperty("--bars", BARS);
     for (let i = 0; i < BARS; i++) {
       const bar = document.createElement("span");
       bar.className = "viz-bar";
       bar.style.setProperty("--i", i);
-      bar.style.setProperty("--radius", "50px");
-      bar.style.setProperty("--peak", `${9 + Math.round(Math.random() * 13)}px`);
+      bar.style.setProperty("--radius", "62px");
+      // pico levemente ondulado por posición, para que no se vea 100% al azar
+      const wobble = Math.sin(i * 0.9) * 4;
+      bar.style.setProperty("--peak", `${11 + wobble + Math.round(Math.random() * 6)}px`);
       bar.style.animationDelay = `${(Math.random() * 1.6).toFixed(2)}s`;
       vizRing.appendChild(bar);
     }
