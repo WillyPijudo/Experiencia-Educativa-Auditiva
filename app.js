@@ -89,7 +89,24 @@ function playAlerta() {
   function openMenu() { menu.hidden = false; }
   function closeMenu() { menu.hidden = true; }
 
-  shieldNav.addEventListener("click", openMenu);
+  let navClickTimer = null;
+  let navDimmed = false;
+
+  shieldNav.addEventListener("click", () => {
+    if (navClickTimer) {
+      // segundo tap dentro de la ventana: doble tap -> esconder/mostrar el botón
+      clearTimeout(navClickTimer);
+      navClickTimer = null;
+      navDimmed = !navDimmed;
+      shieldNav.classList.toggle("nav-dimmed", navDimmed);
+      return;
+    }
+    navClickTimer = setTimeout(() => {
+      navClickTimer = null;
+      openMenu();
+      armBackButton();
+    }, 260);
+  });
   menuClose.addEventListener("click", closeMenu);
 
   gotoButtons.forEach((btn) => {
@@ -150,8 +167,8 @@ function playAlerta() {
       const bar = document.createElement("span");
       bar.className = "viz-bar";
       bar.style.setProperty("--i", i);
-      bar.style.setProperty("--radius", "82px");
-      bar.style.setProperty("--peak", `${14 + Math.round(Math.random() * 20)}px`);
+      bar.style.setProperty("--radius", "50px");
+      bar.style.setProperty("--peak", `${9 + Math.round(Math.random() * 13)}px`);
       bar.style.animationDelay = `${(Math.random() * 1.6).toFixed(2)}s`;
       vizRing.appendChild(bar);
     }
@@ -363,6 +380,7 @@ function playAlerta() {
   const questionEl = document.getElementById("quizQuestion");
   const optionsEl = document.getElementById("quizOptions");
   const counterEl = document.getElementById("quizCounter");
+  const typeBadgeEl = document.getElementById("quizTypeBadge");
   const progressFill = document.getElementById("quizProgressFill");
   const feedbackEl = document.getElementById("quizFeedback");
   const quizCard = document.getElementById("quizCard");
@@ -370,53 +388,96 @@ function playAlerta() {
   const resultScoreEl = document.getElementById("quizResultScore");
   const resultTextEl = document.getElementById("quizResultText");
   const retryBtn = document.getElementById("quizRetry");
+  const certNameInput = document.getElementById("certName");
+  const certBtn = document.getElementById("certDownload");
   if (!questionEl) return;
 
-  const QUESTIONS = [
-    { q: "¿A partir de qué nivel de ruido continuo (8 h) suele exigirse protección auditiva?", options: ["70 dB", "85 dB", "110 dB", "130 dB"], correct: 1, explain: "85 dB es el umbral típico de acción: de ahí en adelante el tiempo seguro se acorta muy rápido." },
-    { q: "¿Qué pasa con las células ciliadas del oído interno una vez dañadas por ruido?", options: ["Se regeneran en unos días", "No se regeneran nunca", "Se regeneran con vitaminas", "Sanan solas con reposo"], correct: 1, explain: "A diferencia de otras células del cuerpo, no se regeneran: el daño es permanente." },
-    { q: "Por la regla de intercambio de 3 dB, si a 85 dB el tiempo seguro es 8 horas, ¿cuánto es a 91 dB?", options: ["4 horas", "2 horas", "1 hora", "30 minutos"], correct: 1, explain: "Cada +3 dB divide el tiempo seguro a la mitad: 85→8h, 88→4h, 91→2h." },
-    { q: "¿Cuál de estas opciones ofrece, en general, mayor atenuación por sí sola?", options: ["Orejeras", "Tapones de espuma", "Doble protección (tapones + orejeras)", "Todas atenúan igual"], correct: 2, explain: "Combinar tapones y orejeras suma atenuación — se usa en los puntos más ruidosos de una planta." },
-    { q: "¿Qué zona convierte las vibraciones mecánicas en señal eléctrica para el cerebro?", options: ["Oído externo", "Oído medio", "Oído interno (cóclea)", "El tímpano"], correct: 2, explain: "En la cóclea, las células ciliadas transforman el sonido en señal nerviosa." },
-    { q: "Trabajás en un puesto de 100 dB toda la jornada. ¿Qué corresponde hacer?", options: ["Nada, no pasa nada", "Usar protección y/o limitar mucho el tiempo de exposición", "Solo bajar la música", "Tomar agua"], correct: 1, explain: "A 100 dB el tiempo seguro sin protección es de minutos: la protección es obligatoria." },
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  const TYPE_LABELS = {
+    mcq: "Opción múltiple",
+    truefalse: "Verdadero o falso",
+    order: "Ordenar",
+    slider: "Estimar",
+  };
+
+  // ---- Banco de preguntas (se arma un test nuevo y random cada vez) ----
+  const BANK = [
+    { type: "mcq", q: "¿A partir de qué nivel de ruido continuo (8 h) suele exigirse protección auditiva?", options: ["70 dB", "85 dB", "110 dB", "130 dB"], correct: 1, explain: "85 dB es el umbral típico de acción: de ahí en adelante el tiempo seguro se acorta muy rápido." },
+    { type: "mcq", q: "¿Qué pasa con las células ciliadas del oído interno una vez dañadas por ruido?", options: ["Se regeneran en unos días", "No se regeneran nunca", "Se regeneran con vitaminas", "Sanan solas con reposo"], correct: 1, explain: "A diferencia de otras células del cuerpo, no se regeneran: el daño es permanente." },
+    { type: "mcq", q: "Por la regla de intercambio de 3 dB, si a 85 dB el tiempo seguro es 8 horas, ¿cuánto es a 91 dB?", options: ["4 horas", "2 horas", "1 hora", "30 minutos"], correct: 1, explain: "Cada +3 dB divide el tiempo seguro a la mitad: 85→8h, 88→4h, 91→2h." },
+    { type: "mcq", q: "¿Cuál de estas opciones ofrece, en general, mayor atenuación por sí sola?", options: ["Orejeras", "Tapones de espuma", "Doble protección (tapones + orejeras)", "Todas atenúan igual"], correct: 2, explain: "Combinar tapones y orejeras suma atenuación — se usa en los puntos más ruidosos de una planta." },
+    { type: "mcq", q: "¿Qué zona convierte las vibraciones mecánicas en señal eléctrica para el cerebro?", options: ["Oído externo", "Oído medio", "Oído interno (cóclea)", "El tímpano"], correct: 2, explain: "En la cóclea, las células ciliadas transforman el sonido en señal nerviosa." },
+    { type: "mcq", q: "Trabajás en un puesto de 100 dB toda la jornada. ¿Qué corresponde hacer?", options: ["Nada, no pasa nada", "Usar protección y/o limitar mucho el tiempo de exposición", "Solo bajar la música", "Tomar agua"], correct: 1, explain: "A 100 dB el tiempo seguro sin protección es de minutos: la protección es obligatoria." },
+    { type: "mcq", q: "¿Qué parte transmite y amplifica la vibración del tímpano hacia el oído interno?", options: ["Los huesecillos (martillo, yunque, estribo)", "La trompa de Eustaquio", "El pabellón auricular", "El nervio auditivo"], correct: 0, explain: "Los tres huesecillos forman una palanca que amplifica la señal antes de llegar a la cóclea." },
+    { type: "mcq", q: "¿Cuál de estas NO es una protección auditiva adecuada?", options: ["Tapones de espuma", "Orejeras", "Algodón común en la oreja", "Tapones moldeados"], correct: 2, explain: "El algodón no está diseñado para atenuar ruido: prácticamente no reduce los decibeles." },
+
+    { type: "truefalse", q: "La pérdida auditiva causada por ruido es reversible si dejás de exponerte un tiempo.", answer: false, explain: "Es permanente: las células ciliadas dañadas no se regeneran nunca." },
+    { type: "truefalse", q: "Usar tapones y orejeras juntos (doble protección) puede sumar más atenuación que usar solo uno.", answer: true, explain: "Por eso se usa en los puestos más ruidosos: la combinación suma decibeles de atenuación." },
+    { type: "truefalse", q: "El ruido de una oficina tranquila (unos 45 dB) representa un riesgo real para el oído.", answer: false, explain: "A ese nivel se puede trabajar toda la jornada sin ningún riesgo auditivo." },
+    { type: "truefalse", q: "Cuanto más alto el nivel de ruido, menos tiempo podés estar expuesto sin protección de forma segura.", answer: true, explain: "Es la regla de intercambio: cada +3 dB reduce el tiempo seguro a la mitad." },
+
+    { type: "order", q: "Ordená estos ambientes de más silencioso a más ruidoso (tocalos en orden).", items: [
+        { label: "Oficina", db: 45 },
+        { label: "Conversación normal", db: 60 },
+        { label: "Tránsito intenso", db: 80 },
+        { label: "Taladro", db: 100 },
+      ], explain: "El orden correcto va de menor a mayor dB: cada escalón representa un salto real de intensidad." },
+    { type: "order", q: "Ordená estos ambientes de más silencioso a más ruidoso (tocalos en orden).", items: [
+        { label: "Biblioteca", db: 35 },
+        { label: "Taller mecánico", db: 90 },
+        { label: "Amoladora", db: 115 },
+        { label: "Martillo neumático", db: 130 },
+      ], explain: "De 35 a 130 dB hay un salto enorme de energía sonora, no solo de 'volumen percibido'." },
+
+    { type: "slider", q: "¿Cuántos decibeles tiene aproximadamente una amoladora en uso?", target: 115, tolerance: 10, min: 60, max: 140, explain: "Una amoladora ronda los 115 dB: a ese nivel, el daño puede ser cuestión de minutos sin protección." },
+    { type: "slider", q: "¿Cuál es, aproximadamente, el límite legal habitual de ruido para una jornada de 8 horas?", target: 85, tolerance: 5, min: 40, max: 120, explain: "85 dB en 8 horas es el valor de referencia más usado como umbral de acción." },
   ];
 
+  const TOTAL_QUESTIONS = 8;
+  let QUESTIONS = [];
   let current = 0;
   let score = 0;
   let answered = false;
 
-  function renderQuestion() {
-    answered = false;
-    feedbackEl.hidden = true;
-    feedbackEl.innerHTML = "";
-    const item = QUESTIONS[current];
-    counterEl.textContent = `Pregunta ${current + 1} de ${QUESTIONS.length}`;
-    progressFill.style.width = `${(current / QUESTIONS.length) * 100}%`;
-    questionEl.textContent = item.q;
-    optionsEl.innerHTML = "";
-    item.options.forEach((opt, i) => {
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = "quiz-option";
-      btn.textContent = opt;
-      btn.addEventListener("click", () => selectOption(i, item));
-      optionsEl.appendChild(btn);
+  function buildSession() {
+    const byType = (t) => shuffle(BANK.filter((b) => b.type === t));
+    const picked = [
+      ...byType("truefalse").slice(0, 2),
+      ...byType("order").slice(0, 1),
+      ...byType("slider").slice(0, 1),
+      ...byType("mcq").slice(0, TOTAL_QUESTIONS - 4),
+    ];
+    return shuffle(picked).map((item) => {
+      if (item.type === "mcq") {
+        const optIdx = shuffle(item.options.map((_, i) => i));
+        return {
+          ...item,
+          options: optIdx.map((i) => item.options[i]),
+          correct: optIdx.indexOf(item.correct),
+        };
+      }
+      if (item.type === "order") {
+        return { ...item, items: shuffle(item.items) };
+      }
+      return { ...item };
     });
   }
 
-  function selectOption(i, item) {
+  function completeQuestion(isCorrect, explainText) {
     if (answered) return;
     answered = true;
-    if (i === item.correct) score++;
-
-    [...optionsEl.children].forEach((b, idx) => {
-      b.disabled = true;
-      if (idx === item.correct) b.classList.add("quiz-correct");
-      else if (idx === i) b.classList.add("quiz-incorrect");
-    });
+    if (isCorrect) score++;
 
     feedbackEl.hidden = false;
-    feedbackEl.innerHTML = `<strong>${i === item.correct ? "¡Correcto!" : "No exactamente."}</strong> ${item.explain}`;
+    feedbackEl.innerHTML = `<strong>${isCorrect ? "¡Correcto!" : "No exactamente."}</strong> ${explainText}`;
 
     const nextBtn = document.createElement("button");
     nextBtn.type = "button";
@@ -428,6 +489,164 @@ function playAlerta() {
       else showResult();
     });
     feedbackEl.appendChild(nextBtn);
+
+    if (isCorrect && navigator.vibrate) navigator.vibrate(30);
+  }
+
+  function renderMCQ(item) {
+    item.options.forEach((opt, i) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "quiz-option quiz-option-mcq";
+      btn.innerHTML = `<span class="quiz-option-letter">${String.fromCharCode(65 + i)}</span><span>${opt}</span>`;
+      btn.addEventListener("click", () => {
+        if (answered) return;
+        [...optionsEl.children].forEach((b, idx) => {
+          b.disabled = true;
+          if (idx === item.correct) b.classList.add("quiz-correct");
+          else if (idx === i) b.classList.add("quiz-incorrect");
+        });
+        completeQuestion(i === item.correct, item.explain);
+      });
+      optionsEl.appendChild(btn);
+    });
+  }
+
+  function renderTrueFalse(item) {
+    const scale = document.createElement("div");
+    scale.className = "tf-scale";
+    scale.innerHTML = `
+      <div class="tf-scale-pan"></div>
+      <div class="tf-scale-post"></div>
+      <div class="tf-scale-pan tf-pan-b"></div>`;
+    optionsEl.appendChild(scale);
+
+    const row = document.createElement("div");
+    row.className = "tf-buttons";
+    const trueBtn = document.createElement("button");
+    trueBtn.type = "button";
+    trueBtn.className = "tf-btn tf-btn-true";
+    trueBtn.textContent = "Verdadero";
+    const falseBtn = document.createElement("button");
+    falseBtn.type = "button";
+    falseBtn.className = "tf-btn tf-btn-false";
+    falseBtn.textContent = "Falso";
+    row.appendChild(trueBtn);
+    row.appendChild(falseBtn);
+    optionsEl.appendChild(row);
+
+    function pick(value, btn) {
+      if (answered) return;
+      trueBtn.disabled = true;
+      falseBtn.disabled = true;
+      const correctBtn = item.answer ? trueBtn : falseBtn;
+      correctBtn.classList.add("quiz-correct");
+      if (btn !== correctBtn) btn.classList.add("quiz-incorrect");
+      completeQuestion(value === item.answer, item.explain);
+    }
+    trueBtn.addEventListener("click", () => pick(true, trueBtn));
+    falseBtn.addEventListener("click", () => pick(false, falseBtn));
+  }
+
+  function renderOrder(item) {
+    const sortedIds = item.items
+      .map((it, i) => ({ ...it, id: i }))
+      .sort((a, b) => a.db - b.db)
+      .map((it) => it.label);
+
+    const pool = document.createElement("div");
+    pool.className = "order-pool";
+    const track = document.createElement("div");
+    track.className = "order-track";
+    const picked = [];
+
+    item.items.forEach((it) => {
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "order-chip";
+      chip.textContent = it.label;
+      chip.addEventListener("click", () => {
+        if (answered || chip.classList.contains("order-picked")) return;
+        picked.push(it.label);
+        chip.classList.add("order-picked");
+        const num = document.createElement("span");
+        num.className = "order-chip-num";
+        num.textContent = picked.length;
+        chip.appendChild(num);
+
+        const tag = document.createElement("span");
+        tag.className = "order-track-item";
+        tag.textContent = `${picked.length}. ${it.label}`;
+        track.appendChild(tag);
+
+        if (picked.length === item.items.length) {
+          const isCorrect = picked.every((label, idx) => label === sortedIds[idx]);
+          [...track.children].forEach((tagEl, idx) => {
+            tagEl.classList.add(picked[idx] === sortedIds[idx] ? "order-track-ok" : "order-track-bad");
+          });
+          const correctOrderText = sortedIds.join(" → ");
+          completeQuestion(isCorrect, `${item.explain} Orden correcto: ${correctOrderText}.`);
+        }
+      });
+      pool.appendChild(chip);
+    });
+
+    optionsEl.appendChild(track);
+    optionsEl.appendChild(pool);
+  }
+
+  function renderSlider(item) {
+    const readout = document.createElement("div");
+    readout.className = "slider-quiz-readout";
+    const mid = Math.round((item.min + item.max) / 2);
+    readout.innerHTML = `<span id="quizSliderValue">${mid}</span><span class="slider-quiz-unit">dB</span>`;
+
+    const input = document.createElement("input");
+    input.type = "range";
+    input.className = "slider-quiz-input";
+    input.min = item.min;
+    input.max = item.max;
+    input.value = mid;
+    input.addEventListener("input", () => {
+      readout.querySelector("#quizSliderValue").textContent = input.value;
+    });
+
+    const confirmBtn = document.createElement("button");
+    confirmBtn.type = "button";
+    confirmBtn.className = "cta-btn slider-quiz-confirm";
+    confirmBtn.textContent = "Confirmar estimación";
+    confirmBtn.addEventListener("click", () => {
+      if (answered) return;
+      input.disabled = true;
+      confirmBtn.disabled = true;
+      const value = Number(input.value);
+      const isCorrect = Math.abs(value - item.target) <= item.tolerance;
+      completeQuestion(isCorrect, `${item.explain} (tu estimación: ${value} dB, valor real aprox.: ${item.target} dB)`);
+    });
+
+    optionsEl.appendChild(readout);
+    optionsEl.appendChild(input);
+    optionsEl.appendChild(confirmBtn);
+  }
+
+  function renderQuestion() {
+    answered = false;
+    feedbackEl.hidden = true;
+    feedbackEl.innerHTML = "";
+    const item = QUESTIONS[current];
+    counterEl.textContent = `Pregunta ${current + 1} de ${QUESTIONS.length}`;
+    typeBadgeEl.textContent = TYPE_LABELS[item.type] || "";
+    progressFill.style.width = `${(current / QUESTIONS.length) * 100}%`;
+    questionEl.textContent = item.q;
+    optionsEl.innerHTML = "";
+    optionsEl.classList.remove("quiz-anim-in");
+    void optionsEl.offsetWidth;
+    optionsEl.classList.add("quiz-anim-in");
+
+    if (item.type === "mcq") renderMCQ(item);
+    else if (item.type === "truefalse") renderTrueFalse(item);
+    else if (item.type === "order") renderOrder(item);
+    else if (item.type === "slider") renderSlider(item);
   }
 
   function showResult() {
@@ -441,14 +660,133 @@ function playAlerta() {
       "Vale la pena repasar el simulador y la sección de EPP antes de reintentar.";
   }
 
-  retryBtn.addEventListener("click", () => {
+  function startQuiz() {
+    QUESTIONS = buildSession();
     current = 0; score = 0;
     quizCard.hidden = false;
     resultEl.hidden = true;
     renderQuestion();
-  });
+  }
 
-  renderQuestion();
+  retryBtn.addEventListener("click", startQuiz);
+
+  // ---- Certificado descargable (canvas, sin backend) ----
+  if (certBtn) {
+    certBtn.addEventListener("click", () => {
+      const name = (certNameInput.value || "").trim() || "Trabajador/a";
+      drawCertificate(name, score, QUESTIONS.length);
+    });
+  }
+
+  function drawCertificate(name, scoreValue, totalValue) {
+    const canvas = document.createElement("canvas");
+    canvas.width = 1200;
+    canvas.height = 840;
+    const ctx = canvas.getContext("2d");
+
+    // fondo degradé
+    const bg = ctx.createLinearGradient(0, 0, 1200, 840);
+    bg.addColorStop(0, "#0a0e17");
+    bg.addColorStop(0.55, "#10182a");
+    bg.addColorStop(1, "#141c30");
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, 1200, 840);
+
+    // resplandor superior
+    const glow = ctx.createRadialGradient(600, 40, 40, 600, 40, 520);
+    glow.addColorStop(0, "rgba(79,214,255,0.18)");
+    glow.addColorStop(1, "rgba(79,214,255,0)");
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, 1200, 840);
+
+    // marco
+    ctx.strokeStyle = "rgba(79,214,255,0.5)";
+    ctx.lineWidth = 3;
+    ctx.strokeRect(36, 36, 1128, 768);
+    ctx.strokeStyle = "rgba(79,214,255,0.18)";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(52, 52, 1096, 736);
+
+    // escudo simple centrado arriba
+    ctx.save();
+    ctx.translate(600, 150);
+    ctx.beginPath();
+    ctx.moveTo(0, -85);
+    ctx.lineTo(78, -50);
+    ctx.lineTo(78, 22);
+    ctx.bezierCurveTo(78, 78, 42, 118, 0, 138);
+    ctx.bezierCurveTo(-42, 118, -78, 78, -78, 22);
+    ctx.lineTo(-78, -50);
+    ctx.closePath();
+    ctx.fillStyle = "rgba(16,24,42,0.9)";
+    ctx.fill();
+    ctx.strokeStyle = "#4fd6ff";
+    ctx.lineWidth = 4;
+    ctx.stroke();
+    // barritas tipo ecualizador dentro del escudo
+    const barHeights = [26, 46, 66, 50, 32];
+    barHeights.forEach((h, i) => {
+      const x = -46 + i * 23;
+      ctx.fillStyle = "#4fd6ff";
+      ctx.fillRect(x, 40 - h, 10, h);
+    });
+    ctx.restore();
+
+    // textos
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#8093b4";
+    ctx.font = "600 20px 'Space Mono', monospace";
+    ctx.fillText("ESCUDO SONORO — PROGRAMA DE SEGURIDAD AUDITIVA", 600, 300);
+
+    ctx.fillStyle = "#eef3fb";
+    ctx.font = "900 44px 'Orbitron', sans-serif";
+    ctx.fillText("CERTIFICADO DE CAPACITACIÓN", 600, 355);
+
+    ctx.fillStyle = "#4fd6ff";
+    ctx.font = "500 20px 'Space Grotesk', sans-serif";
+    ctx.fillText("Se certifica que", 600, 420);
+
+    ctx.fillStyle = "#34e0a1";
+    ctx.font = "700 52px 'Space Grotesk', sans-serif";
+    ctx.fillText(name, 600, 490);
+
+    ctx.fillStyle = "#8093b4";
+    ctx.font = "500 20px 'Space Grotesk', sans-serif";
+    ctx.fillText("completó la capacitación de protección auditiva laboral", 600, 535);
+
+    ctx.fillStyle = "#eef3fb";
+    ctx.font = "700 26px 'Space Mono', monospace";
+    ctx.fillText(`Resultado del test: ${scoreValue} / ${totalValue}`, 600, 610);
+
+    const dateStr = new Date().toLocaleDateString("es-AR", { year: "numeric", month: "long", day: "numeric" });
+    ctx.fillStyle = "#8093b4";
+    ctx.font = "400 16px 'Space Mono', monospace";
+    ctx.fillText(dateStr, 600, 650);
+
+    ctx.strokeStyle = "rgba(128,147,180,0.4)";
+    ctx.beginPath();
+    ctx.moveTo(430, 700);
+    ctx.lineTo(770, 700);
+    ctx.stroke();
+    ctx.font = "400 14px 'Space Grotesk', sans-serif";
+    ctx.fillStyle = "#8093b4";
+    ctx.fillText("Capacitación interna — no reemplaza controles médicos ni normativa vigente", 600, 730);
+
+    const trigger = () => {
+      const link = document.createElement("a");
+      link.download = `certificado-${name.replace(/\s+/g, "-").toLowerCase()}.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    };
+
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(trigger).catch(trigger);
+    } else {
+      trigger();
+    }
+  }
+
+  startQuiz();
 })();
 
 

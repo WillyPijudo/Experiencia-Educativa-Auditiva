@@ -340,7 +340,10 @@
 
   <div class="quiz-card" id="quizCard">
     <div class="quiz-progress"><span class="quiz-progress-fill" id="quizProgressFill"></span></div>
-    <p class="quiz-counter" id="quizCounter">Pregunta 1 de 6</p>
+    <div class="quiz-top-row">
+      <p class="quiz-counter" id="quizCounter">Pregunta 1 de 8</p>
+      <span class="quiz-type-badge" id="quizTypeBadge">Opción múltiple</span>
+    </div>
     <p class="quiz-question" id="quizQuestion">—</p>
     <div class="quiz-options" id="quizOptions"></div>
     <div class="quiz-feedback" id="quizFeedback" hidden></div>
@@ -349,7 +352,14 @@
   <div class="quiz-result" id="quizResult" hidden>
     <span class="quiz-result-score" id="quizResultScore">0/6</span>
     <p class="quiz-result-text" id="quizResultText"></p>
-    <button type="button" class="cta-btn" id="quizRetry">Reintentar</button>
+
+    <div class="cert-block">
+      <label class="cert-label" for="certName">Tu nombre, para el certificado</label>
+      <input type="text" id="certName" class="cert-input" placeholder="Nombre y apellido" maxlength="40" autocomplete="off">
+      <button type="button" class="cta-btn cert-btn" id="certDownload">Descargar certificado</button>
+    </div>
+
+    <button type="button" class="cta-btn quiz-retry-btn" id="quizRetry">Reintentar con preguntas nuevas</button>
   </div>
 </section>
 
