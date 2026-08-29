@@ -25,6 +25,11 @@
   function showScreen(id) {
     screens.forEach((s) => { s.hidden = s.id !== `screen-${id}`; });
     document.getElementById("screens").scrollTop = 0;
+    if (window.ear3D) {
+      const is3D = document.querySelector('.view-toggle-btn[data-view="3d"]')?.classList.contains("active");
+      if (id === "oido" && is3D) window.ear3D.resume();
+      else window.ear3D.pause();
+    }
   }
 
   function openMenu() { menu.hidden = false; }
@@ -349,4 +354,255 @@
   });
 
   renderQuestion();
+})();
+
+
+
+(function earViewToggle() {
+  const toggleButtons = document.querySelectorAll(".view-toggle-btn");
+  const view2D = document.getElementById("earView2D");
+  const view3D = document.getElementById("earView3D");
+  if (!toggleButtons.length) return;
+
+  toggleButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      toggleButtons.forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      const is3D = btn.dataset.view === "3d";
+      view2D.hidden = is3D;
+      view3D.hidden = !is3D;
+      if (window.ear3D) {
+        if (is3D) { window.ear3D.init(); window.ear3D.resume(); }
+        else window.ear3D.pause();
+      }
+    });
+  });
+})();
+
+(function ear3DModel() {
+  const canvas = document.getElementById("ear3dCanvas");
+  const wrap = document.getElementById("ear3dWrap");
+  const descEl = document.getElementById("ear3dDesc");
+  const playBtn = document.getElementById("ear3dPlay");
+  const ciliaSlider = document.getElementById("ciliaSlider");
+  if (!canvas || typeof THREE === "undefined") return;
+
+  let inited = false;
+  let renderer, scene, camera, controls, raycaster, mouse;
+  let animId = null;
+  let running = false;
+  let playing = false;
+  let playStart = 0;
+
+  const PART_INFO = {
+    canal: "El sonido entra por acá y viaja como una onda de presión hacia el tímpano.",
+    timpano: "Vibra con la onda sonora y transmite el movimiento a los huesecillos.",
+    huesecillos: "Martillo, yunque y estribo amplifican la vibración antes de entrar a la cóclea.",
+    coclea: "La onda viaja por el líquido de la cóclea y mueve las células ciliadas según la frecuencia del sonido.",
+    canales: "Los conductos semicirculares detectan movimiento de la cabeza, no sonido — controlan el equilibrio.",
+    nervio: "La señal eléctrica viaja por el nervio auditivo hasta el cerebro.",
+  };
+
+  const parts = {};
+  const hairCells = [];
+  let maxDamagedHairs = 0;
+  const SEQUENCE = ["canal", "timpano", "huesecillos", "coclea", "nervio"];
+
+  class CochleaCurve extends THREE.Curve {
+    getPoint(t, target) {
+      const turns = 2.4;
+      const angle = t * Math.PI * 2 * turns;
+      const radius = 0.75 - t * 0.62;
+      const x = Math.cos(angle) * radius;
+      const y = t * 1.1 - 0.2;
+      const z = Math.sin(angle) * radius;
+      return (target || new THREE.Vector3()).set(x, y, z);
+    }
+  }
+
+  function buildScene() {
+    scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+    camera.position.set(0, 1.4, 5.2);
+
+    renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    scene.add(new THREE.AmbientLight(0x9fd8ff, 0.6));
+    const point = new THREE.PointLight(0x4fd6ff, 1.1, 20);
+    point.position.set(3, 3, 4);
+    scene.add(point);
+
+    controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.08;
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = 0.6;
+    controls.enablePan = false;
+    controls.minDistance = 3;
+    controls.maxDistance = 8;
+
+    const canalMat = new THREE.MeshStandardMaterial({ color: 0x4fd6ff, transparent: true, opacity: 0.35, side: THREE.DoubleSide, emissive: 0x0b3a4a, roughness: 0.4 });
+    const canal = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.4, 1.8, 24, 1, true), canalMat);
+    canal.rotation.z = Math.PI / 2;
+    canal.position.set(-2.1, 0, 0);
+    scene.add(canal);
+    parts.canal = canal;
+
+    const timpanoMat = new THREE.MeshStandardMaterial({ color: 0xff5c7a, transparent: true, opacity: 0.55, side: THREE.DoubleSide, emissive: 0x4a0f1c });
+    const timpano = new THREE.Mesh(new THREE.CircleGeometry(0.36, 24), timpanoMat);
+    timpano.rotation.y = Math.PI / 2;
+    timpano.position.set(-1.2, 0, 0);
+    scene.add(timpano);
+    parts.timpano = timpano;
+
+    const ossicleMat = new THREE.MeshStandardMaterial({ color: 0xeef3fb, emissive: 0x1a2740, roughness: 0.3 });
+    const oss1 = new THREE.Mesh(new THREE.SphereGeometry(0.1, 12, 12), ossicleMat);
+    oss1.position.set(-0.95, 0.1, 0);
+    const oss2 = new THREE.Mesh(new THREE.SphereGeometry(0.09, 12, 12), ossicleMat);
+    oss2.position.set(-0.72, 0.2, 0.05);
+    const oss3 = new THREE.Mesh(new THREE.SphereGeometry(0.08, 12, 12), ossicleMat);
+    oss3.position.set(-0.5, 0.28, 0.08);
+    const ossGroup = new THREE.Group();
+    ossGroup.add(oss1, oss2, oss3);
+    scene.add(ossGroup);
+    parts.huesecillos = ossGroup;
+
+    const cochleaCurve = new CochleaCurve();
+    const cochleaMat = new THREE.MeshStandardMaterial({ color: 0x34e0a1, transparent: true, opacity: 0.5, emissive: 0x0c3f2c, roughness: 0.4 });
+    const cochlea = new THREE.Mesh(new THREE.TubeGeometry(cochleaCurve, 220, 0.09, 10, false), cochleaMat);
+    cochlea.position.set(0.55, 0, 0);
+    scene.add(cochlea);
+    parts.coclea = cochlea;
+
+    const HAIR_COUNT = 30;
+    const hairGroup = new THREE.Group();
+    for (let i = 0; i < HAIR_COUNT; i++) {
+      const t = i / (HAIR_COUNT - 1);
+      const p = cochleaCurve.getPoint(t);
+      const hairMat = new THREE.MeshStandardMaterial({ color: 0x34e0a1, emissive: 0x0c3f2c });
+      const hair = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.09, 6), hairMat);
+      hair.position.copy(p).add(new THREE.Vector3(0.55, 0.11, 0));
+      hairCells.push({ mesh: hair, damaged: false });
+      hairGroup.add(hair);
+    }
+    scene.add(hairGroup);
+
+    const semiMat = new THREE.MeshStandardMaterial({ color: 0x4fd6ff, transparent: true, opacity: 0.4, emissive: 0x0b3a4a });
+    const ring1 = new THREE.Mesh(new THREE.TorusGeometry(0.42, 0.035, 8, 40), semiMat);
+    const ring2 = ring1.clone();
+    const ring3 = ring1.clone();
+    ring1.position.set(0.4, 1.05, 0);
+    ring2.position.set(0.4, 1.05, 0);
+    ring2.rotation.x = Math.PI / 2;
+    ring3.position.set(0.4, 1.05, 0);
+    ring3.rotation.y = Math.PI / 2;
+    const semiGroup = new THREE.Group();
+    semiGroup.add(ring1, ring2, ring3);
+    scene.add(semiGroup);
+    parts.canales = semiGroup;
+
+    const nerveMat = new THREE.LineBasicMaterial({ color: 0xff5c7a, transparent: true, opacity: 0.6 });
+    const nerveGroup = new THREE.Group();
+    for (let i = 0; i < 5; i++) {
+      const start = new THREE.Vector3(0.9, 0.1 + i * 0.05, 0);
+      const end = new THREE.Vector3(2.3, -0.4 + i * 0.35, 0.2);
+      const geo = new THREE.BufferGeometry().setFromPoints([start, end]);
+      nerveGroup.add(new THREE.Line(geo, nerveMat));
+    }
+    scene.add(nerveGroup);
+    parts.nervio = nerveGroup;
+
+    raycaster = new THREE.Raycaster();
+    mouse = new THREE.Vector2();
+    canvas.addEventListener("pointerdown", onPick);
+    window.addEventListener("resize", onResize);
+    onResize();
+  }
+
+  function onResize() {
+    if (!wrap || !renderer) return;
+    const w = wrap.clientWidth, h = wrap.clientHeight;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+
+  function onPick(event) {
+    const rect = canvas.getBoundingClientRect();
+    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+    raycaster.setFromCamera(mouse, camera);
+    const pickable = [parts.canal, parts.timpano, parts.huesecillos, parts.coclea, parts.canales, parts.nervio]
+      .flatMap((p) => (p.isGroup ? p.children : [p]));
+    const hits = raycaster.intersectObjects(pickable, false);
+    if (!hits.length) return;
+    const hitObj = hits[0].object;
+    for (const key in parts) {
+      const group = parts[key];
+      const objList = group.isGroup ? group.children : [group];
+      if (objList.includes(hitObj)) { descEl.textContent = PART_INFO[key]; return; }
+    }
+  }
+
+  function updateHairDamage() {
+    if (!ciliaSlider) return;
+    const STEP_DAMAGE = [0, 4, 9, 16, 22];
+    const damaged = STEP_DAMAGE[Number(ciliaSlider.value)] || 0;
+    maxDamagedHairs = Math.max(maxDamagedHairs, damaged);
+    hairCells.forEach((h, i) => {
+      const isDamaged = i < maxDamagedHairs;
+      h.damaged = isDamaged;
+      h.mesh.material.color.set(isDamaged ? 0x8093b4 : 0x34e0a1);
+      h.mesh.material.emissive.set(isDamaged ? 0x1a1e29 : 0x0c3f2c);
+    });
+  }
+
+  function playSequence() {
+    if (playing) return;
+    playing = true;
+    playStart = performance.now();
+    descEl.textContent = "Siguiendo el camino del sonido...";
+  }
+
+  function tick(now) {
+    const t = now * 0.001;
+    hairCells.forEach((h) => {
+      if (!h.damaged) h.mesh.rotation.z = Math.sin(t * 4 + h.mesh.position.y * 10) * 0.25;
+    });
+
+    if (playing) {
+      const elapsed = now - playStart;
+      const stepDuration = 550;
+      const activeIndex = Math.floor(elapsed / stepDuration);
+      SEQUENCE.forEach((key, i) => {
+        const group = parts[key];
+        const scale = i === activeIndex ? 1.15 + Math.sin(t * 12) * 0.05 : 1;
+        group.scale.setScalar(scale);
+      });
+      if (activeIndex >= SEQUENCE.length) {
+        playing = false;
+        SEQUENCE.forEach((key) => parts[key].scale.setScalar(1));
+        descEl.textContent = "Tocá cualquier parte del modelo para ver qué hace, o arrastrá para girarlo.";
+      }
+    }
+
+    controls.update();
+    renderer.render(scene, camera);
+    if (running) animId = requestAnimationFrame(tick);
+  }
+
+  function init() {
+    if (inited) return;
+    inited = true;
+    buildScene();
+    updateHairDamage();
+    if (ciliaSlider) ciliaSlider.addEventListener("input", updateHairDamage);
+    if (playBtn) playBtn.addEventListener("click", playSequence);
+  }
+
+  function pause() { running = false; if (animId) cancelAnimationFrame(animId); }
+  function resume() { if (!inited || running) return; running = true; animId = requestAnimationFrame(tick); }
+
+  window.ear3D = { init, pause, resume };
 })();
