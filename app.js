@@ -234,12 +234,24 @@ function playAlerta() {
     plugMoldedEl.classList.toggle("active", showMolded);
   }
 
+   const quickRiskDot = document.getElementById("quickRiskDot");
+  const quickRiskLabel = document.getElementById("quickRiskLabel");
+  const quickSafeTime = document.getElementById("quickSafeTime");
+  const safeTimeFill = document.getElementById("safeTimeFill");
+
+  function updateRefActive(rawDb) {
+    refButtons.forEach((btn) => {
+      btn.classList.toggle("db-ref-active", Number(btn.dataset.db) === rawDb);
+    });
+  }
+
   function update() {
     const rawDb = Number(slider.value);
     const effectiveDb = Math.max(20, rawDb - attenuation);
 
     dbValueEl.textContent = rawDb;
     effectiveDbEl.textContent = `${Math.round(effectiveDb)} dB`;
+    updateRefActive(rawDb);
 
     const minutes = safeMinutes(effectiveDb);
     safeTimeEl.textContent = formatTime(minutes);
@@ -247,6 +259,21 @@ function playAlerta() {
     const risk = riskState(effectiveDb);
     riskLabelEl.textContent = risk.label;
     riskLabelEl.style.color = risk.color;
+
+    if (quickRiskLabel) {
+      quickRiskLabel.textContent = risk.label;
+      quickRiskLabel.style.color = risk.color;
+      quickRiskDot.style.background = risk.color;
+      quickRiskDot.style.boxShadow = `0 0 8px 1px ${risk.color}`;
+      quickSafeTime.textContent = formatTime(minutes);
+      quickSafeTime.style.color = risk.color;
+    }
+    if (safeTimeFill) {
+      const clampedMinutes = isFinite(minutes) ? minutes : 480;
+      const pct = Math.max(3, Math.min(100, (Math.log(clampedMinutes + 1) / Math.log(481)) * 100));
+      safeTimeFill.style.width = `${pct}%`;
+      safeTimeFill.style.backgroundColor = risk.color;
+    }
 
     if (risk.key === "safe") {
       readoutNoteEl.textContent = attenuation > 0
@@ -277,7 +304,6 @@ function playAlerta() {
 
     if (compareOn) updateCompare(rawDb);
   }
-
   function updateCompare(rawDb) {
     const dbNone = rawDb;
     const dbProt = Math.max(20, rawDb - attenuation);
@@ -828,23 +854,36 @@ function playAlerta() {
   const certCinema = document.getElementById("certCinema");
   const certCinemaText = document.getElementById("certCinemaText");
 
+  const SHEET_WEBAPP_URL = "PEGÁ_ACÁ_LA_URL_DE_TU_APPS_SCRIPT"; // ver instrucciones abajo
+
+  function sendCertRecord(name, scoreValue, totalValue, code) {
+    if (!SHEET_WEBAPP_URL || SHEET_WEBAPP_URL.includes("PEGÁ_ACÁ")) return;
+    fetch(SHEET_WEBAPP_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ nombre: name, puntaje: scoreValue, total: totalValue, codigo: code }),
+    }).catch(() => {});
+  }
+
   if (certBtn) {
     certBtn.addEventListener("click", () => {
       const name = (certNameInput.value || "").trim() || "Trabajador/a";
       certBtn.disabled = true;
       certCinema.hidden = false;
       certCinemaText.textContent = "Validando capacitación…";
+      sendCertRecord(name, score, QUESTIONS.length, code);
       setTimeout(() => { certCinemaText.textContent = "Sellando certificado…"; }, 1000);
       setTimeout(() => { certCinemaText.textContent = "Firmando…"; }, 1550);
       setTimeout(() => {
-        drawCertificate(name, score, QUESTIONS.length);
+        drawCertificate(name, score, QUESTIONS.length, code);
         certCinema.hidden = true;
         certBtn.disabled = false;
       }, 2650);
     });
   }
 
-  function drawCertificate(name, scoreValue, totalValue) {
+  function drawCertificate(name, scoreValue, totalValue, code) {
     const canvas = document.createElement("canvas");
     canvas.width = 1200;
     canvas.height = 840;
