@@ -1022,7 +1022,6 @@ function playAlerta() {
     ctx.fillStyle = "#8093b4";
     ctx.fillText("Firma", 340, 726);
 
-    const code = `ES-${new Date().getFullYear()}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
     ctx.fillText(`N.º de registro interno: ${code}`, 340, 742);
 
     ctx.save();
