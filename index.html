@@ -214,6 +214,12 @@
   <p class="eyebrow">Anatomía</p>
   <h2 class="screen-title">Así funciona (y se daña) tu oído</h2>
 
+<div class="view-toggle" id="viewToggle">
+  <button type="button" class="view-toggle-btn active" data-view="2d">Vista 2D</button>
+  <button type="button" class="view-toggle-btn" data-view="3d">Vista 3D interactiva</button>
+</div>
+
+<div class="ear-view" id="earView2D">
 <div class="ear-diagram-wrap">
   <svg class="ear-diagram" id="earDiagram" viewBox="0 0 400 280" role="img" aria-label="Corte del oído con sus partes">
 
@@ -287,6 +293,16 @@
 </div>
 
 <p class="ear-zone-desc" id="earZoneDesc">El pabellón capta el sonido y el conducto auditivo lo lleva hacia el tímpano. Acá el ruido todavía no daña nada — es solo la entrada.</p>
+</div>
+
+<div class="ear-view" id="earView3D" hidden>
+  <div class="ear3d-wrap" id="ear3dWrap">
+    <canvas id="ear3dCanvas"></canvas>
+    <div class="ear3d-hint">Arrastrá para rotar · pellizcá para zoom</div>
+  </div>
+  <button type="button" class="cta-btn ear3d-play" id="ear3dPlay">Reproducir recorrido del sonido</button>
+  <p class="ear-zone-desc" id="ear3dDesc">Tocá cualquier parte del modelo para ver qué hace, o arrastrá para girarlo.</p>
+</div>
 
   <div class="cilia-panel">
     <p class="eyebrow" style="margin-bottom:6px;">Corte del órgano de Corti</p>
