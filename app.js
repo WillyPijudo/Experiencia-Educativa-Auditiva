@@ -181,7 +181,6 @@
 // ---- Modelo del oído: zonas + simulación de células ciliadas ----
 (function earModel() {
   const zoneButtons = document.querySelectorAll(".ear-zone-btn");
-  const zoneGroups = document.querySelectorAll(".ear-zone");
   const descEl = document.getElementById("earZoneDesc");
   const ciliaSlider = document.getElementById("ciliaSlider");
   const ciliaSvg = document.getElementById("ciliaSvg");
@@ -191,21 +190,26 @@
   if (!zoneButtons.length) return;
 
   const DESCRIPTIONS = {
-    externo: "El pabellón y el conducto auditivo captan el sonido y lo llevan hacia el tímpano. Acá el ruido todavía no daña nada — es solo la entrada.",
-    medio: "El tímpano y los tres huesitos (martillo, yunque, estribo) amplifican la vibración. Un golpe de ruido muy fuerte puede lastimar el tímpano, pero lo grave pasa un poco más adentro.",
-    interno: "En la cóclea viven las células ciliadas: convierten la vibración en señal eléctrica para el cerebro. Son las que el ruido excesivo destruye — y no se reemplazan.",
+    externo: "El pabellón capta el sonido y el conducto auditivo lo lleva hacia el tímpano. Acá el ruido todavía no daña nada — es solo la entrada.",
+    timpano: "Una membrana delgadísima que vibra con el sonido. Un ruido explosivo muy fuerte puede perforarla, pero el daño auditivo crónico ocurre más adentro.",
+    huesecillos: "Martillo, yunque y estribo: tres huesitos que amplifican la vibración del tímpano y la empujan hacia el oído interno.",
+    trompa: "La trompa de Eustaquio equilibra la presión entre el oído medio y la garganta. No participa en el daño por ruido, pero es clave para la salud del oído.",
+    coclea: "Dentro de la cóclea viven las células ciliadas: convierten la vibración en señal eléctrica. Son las que el ruido excesivo destruye — y no se reemplazan.",
+    canales: "Los conductos semicirculares no procesan sonido: controlan el equilibrio. Están al lado de la cóclea, por eso a veces el ruido fuerte también marea.",
+    nervio: "El nervio auditivo lleva la señal eléctrica desde la cóclea hasta el cerebro, donde recién ahí se interpreta como sonido.",
   };
 
   zoneButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
       zoneButtons.forEach((b) => b.classList.remove("active"));
       btn.classList.add("active");
-      zoneGroups.forEach((g) => g.classList.toggle("zone-active", g.dataset.zone === btn.dataset.zone));
+      document.querySelectorAll("[data-part]").forEach((el) => {
+        el.classList.toggle("zone-active", el.dataset.part === btn.dataset.zone);
+      });
       descEl.textContent = DESCRIPTIONS[btn.dataset.zone];
     });
   });
 
-  // Generar las 24 "cilias" (células ciliadas) del corte transversal
   const CILIA_COUNT = 24;
   for (let i = 0; i < CILIA_COUNT; i++) {
     const x = 8 + i * (284 / (CILIA_COUNT - 1));
@@ -231,7 +235,7 @@
     const step = STEPS[i];
     ciliaYearsEl.textContent = step.years;
     ciliaNoteEl.textContent = step.note;
-    maxDamaged = Math.max(maxDamaged, step.damaged); // el daño no se revierte al bajar el slider
+    maxDamaged = Math.max(maxDamaged, step.damaged);
     document.querySelectorAll(".cilia-hair").forEach((hair) => {
       hair.classList.toggle("cilia-damaged", Number(hair.dataset.index) < maxDamaged);
     });
