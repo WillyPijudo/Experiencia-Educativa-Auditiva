@@ -64,15 +64,15 @@
       <p class="eyebrow">Simulador de exposición</p>
       <h2 class="screen-title">¿Cuánto aguanta tu oído?</h2>
 
-      <div class="eardrum-stage">
-        <svg class="eardrum" id="eardrumSvg" viewBox="0 0 200 200" aria-hidden="true">
-          <circle class="ring ring-3" cx="100" cy="100" r="88"/>
-          <circle class="ring ring-2" cx="100" cy="100" r="66"/>
-          <circle class="ring ring-1" cx="100" cy="100" r="44"/>
-          <circle class="membrane" cx="100" cy="100" r="26"/>
-        </svg>
-        <span class="eardrum-label" id="riskLabel">SEGURO</span>
-      </div>
+<div class="ear-photo-stage">
+  <img class="ear-photo" src="img/ear.png" alt="Oreja">
+  <div class="ear-glow" id="earGlow"></div>
+  <div class="protect-band" id="protectBand"></div>
+  <div class="protect-earmuff" id="protectEarmuff"></div>
+  <div class="protect-plug protect-plug-foam" id="protectPlugFoam"></div>
+  <div class="protect-plug protect-plug-molded" id="protectPlugMolded"></div>
+  <span class="eardrum-label" id="riskLabel">SEGURO</span>
+</div>
 
       <div class="slider-block">
         <div class="slider-readout">
@@ -140,13 +140,13 @@
 
       <div class="protect-block">
         <span class="protect-title">Protección auditiva</span>
-        <div class="protect-types" id="protectTypes">
-          <button type="button" class="protect-btn active" data-atten="0">Ninguna</button>
-          <button type="button" class="protect-btn" data-atten="25">Tapones espuma</button>
-          <button type="button" class="protect-btn" data-atten="22">Orejeras</button>
-          <button type="button" class="protect-btn" data-atten="28">Tapones moldeados</button>
-          <button type="button" class="protect-btn" data-atten="32">Doble protección</button>
-        </div>
+<div class="protect-types" id="protectTypes">
+  <button type="button" class="protect-btn active" data-atten="0" data-kind="ninguna">Ninguna</button>
+  <button type="button" class="protect-btn" data-atten="25" data-kind="espuma">Tapones espuma</button>
+  <button type="button" class="protect-btn" data-atten="22" data-kind="orejeras">Orejeras</button>
+  <button type="button" class="protect-btn" data-atten="28" data-kind="moldeado">Tapones moldeados</button>
+  <button type="button" class="protect-btn" data-atten="32" data-kind="doble">Doble protección</button>
+</div>
       </div>
 
       <button class="compare-btn" id="compareBtn" type="button">Comparar con / sin protección</button>
