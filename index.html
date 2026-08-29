@@ -163,31 +163,69 @@
     </section>
 
     <!-- OÍDO 3D (stub) -->
-    <section class="screen" id="screen-oido" data-screen hidden>
-      <p class="eyebrow">Anatomía</p>
-      <h2 class="screen-title">Modelo del oído</h2>
-      <div class="stub-card">
-        <svg class="stub-icon" viewBox="0 0 100 100" aria-hidden="true">
-          <path d="M50 12c-20 0-34 16-34 36 0 16 9 22 9 34 0 8 6 14 14 14 7 0 11-5 11-11 0-5-4-7-4-13 0-5 4-8 4-15 0-6-6-9-6-16 0-8 8-13 16-9 6 3 9 10 9 18" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
-        </svg>
-        <span class="stub-tag">Próximamente</span>
-        <p class="stub-text">Un modelo 3D navegable del oído externo, medio e interno, con cada parte explicada al tocarla.</p>
-      </div>
-    </section>
+<section class="screen" id="screen-oido" data-screen hidden>
+  <p class="eyebrow">Anatomía</p>
+  <h2 class="screen-title">Así funciona (y se daña) tu oído</h2>
+
+  <div class="ear-diagram-wrap">
+    <svg class="ear-diagram" id="earDiagram" viewBox="0 0 320 200" aria-hidden="true">
+      <g class="ear-zone zone-active" data-zone="externo">
+        <path d="M18 90 C10 55 40 20 78 22 C108 24 122 48 118 74 C114 100 90 108 74 100 C60 93 58 78 66 70 C72 64 82 66 84 74" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+        <path d="M118 74 L152 84" stroke="currentColor" stroke-width="10" stroke-linecap="round"/>
+      </g>
+      <g class="ear-zone" data-zone="medio">
+        <circle cx="164" cy="84" r="7"/>
+        <path d="M164 84 L182 78 L182 96 Z"/>
+        <circle cx="194" cy="86" r="6"/>
+      </g>
+      <g class="ear-zone" data-zone="interno">
+        <path class="cochlea" d="M210 86 C210 66 230 58 244 68 C256 76 254 92 240 96 C230 99 224 90 230 84 C234 80 240 82 240 88" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+      </g>
+    </svg>
+  </div>
+
+  <div class="ear-zone-buttons" id="earZoneButtons">
+    <button type="button" class="ear-zone-btn active" data-zone="externo">Oído externo</button>
+    <button type="button" class="ear-zone-btn" data-zone="medio">Oído medio</button>
+    <button type="button" class="ear-zone-btn" data-zone="interno">Oído interno</button>
+  </div>
+
+  <p class="ear-zone-desc" id="earZoneDesc">El pabellón y el conducto auditivo captan el sonido y lo llevan hacia el tímpano. Acá el ruido todavía no daña nada — es solo la entrada.</p>
+
+  <div class="cilia-panel">
+    <p class="eyebrow" style="margin-bottom:6px;">Corte del órgano de Corti</p>
+    <h3 class="cilia-title">Células ciliadas — no se regeneran</h3>
+    <svg class="cilia-svg" id="ciliaSvg" viewBox="0 0 300 90" aria-hidden="true">
+      <line class="cilia-base" x1="0" y1="80" x2="300" y2="80"/>
+    </svg>
+    <div class="cilia-slider-row">
+      <input type="range" min="0" max="4" value="0" step="1" id="ciliaSlider" class="cilia-slider" aria-label="Años de exposición sin protección">
+      <span class="cilia-years" id="ciliaYears">0 años</span>
+    </div>
+    <p class="cilia-note" id="ciliaNote">Sin exposición a ruido excesivo: todas las células funcionan.</p>
+    <button type="button" class="cilia-reset" id="ciliaReset">Reiniciar simulación</button>
+  </div>
+</section>
 
     <!-- TEST (stub) -->
-    <section class="screen" id="screen-test" data-screen hidden>
-      <p class="eyebrow">Evaluación</p>
-      <h2 class="screen-title">Test y certificado</h2>
-      <div class="stub-card">
-        <svg class="stub-icon" viewBox="0 0 100 100" aria-hidden="true">
-          <path d="M28 20h44v60l-22-12-22 12z" fill="none" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>
-          <path d="M38 42l8 8 16-16" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        <span class="stub-tag">Próximamente</span>
-        <p class="stub-text">Preguntas cortas sobre protección auditiva y una constancia descargable al terminar.</p>
-      </div>
-    </section>
+<section class="screen" id="screen-test" data-screen hidden>
+  <p class="eyebrow">Evaluación</p>
+  <h2 class="screen-title">Test rápido</h2>
+
+  <div class="quiz-card" id="quizCard">
+    <div class="quiz-progress"><span class="quiz-progress-fill" id="quizProgressFill"></span></div>
+    <p class="quiz-counter" id="quizCounter">Pregunta 1 de 6</p>
+    <p class="quiz-question" id="quizQuestion">—</p>
+    <div class="quiz-options" id="quizOptions"></div>
+    <div class="quiz-feedback" id="quizFeedback" hidden></div>
+  </div>
+
+  <div class="quiz-result" id="quizResult" hidden>
+    <span class="quiz-result-score" id="quizResultScore">0/6</span>
+    <p class="quiz-result-text" id="quizResultText"></p>
+    <button type="button" class="cta-btn" id="quizRetry">Reintentar</button>
+  </div>
+</section>
 
   </main>
 
