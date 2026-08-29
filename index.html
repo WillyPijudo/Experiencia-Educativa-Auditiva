@@ -366,6 +366,70 @@
 
   </main>
 
+    <!-- HERRAMIENTAS -->
+<section class="screen" id="screen-herramientas" data-screen hidden>
+  <p class="eyebrow">Para el día a día</p>
+  <h2 class="screen-title">Herramientas</h2>
+  <p class="hero-sub">Dos ayudas simples para llevar la protección a la práctica en tu puesto.</p>
+
+  <div class="tool-card">
+    <h3 class="tool-title">Cronómetro de exposición</h3>
+    <p class="tool-desc">Elegí el nivel de ruido de tu puesto y arrancá el cronómetro al empezar a trabajar. Te avisa cuando superás el tiempo seguro.</p>
+    <select id="toolDbSelect" class="tool-select">
+      <option value="80">Taller — 80 dB</option>
+      <option value="100" selected>Taladro — 100 dB</option>
+      <option value="115">Amoladora — 115 dB</option>
+      <option value="130">Martillo neumático — 130 dB</option>
+    </select>
+    <div class="tool-timer-row">
+      <span class="tool-timer" id="toolTimer">00:00</span>
+      <span class="tool-timer-limit" id="toolTimerLimit">límite: 8 h</span>
+    </div>
+    <div class="tool-timer-buttons">
+      <button type="button" class="cta-btn tool-btn" id="toolStart">Iniciar</button>
+      <button type="button" class="compare-btn tool-btn" id="toolReset">Reiniciar</button>
+    </div>
+    <p class="tool-note" id="toolNote">Elegí un nivel y arrancá cuando empieces tu tarea.</p>
+  </div>
+
+  <div class="tool-card">
+    <h3 class="tool-title">Checklist diaria de EPP</h3>
+    <p class="tool-desc">Marcá los tres puntos antes de empezar tu turno. Completarlos todos suma un día a tu racha.</p>
+    <ul class="tool-checklist" id="toolChecklist">
+      <li><label><input type="checkbox" data-check="0"> Me coloqué la protección auditiva correcta para mi puesto</label></li>
+      <li><label><input type="checkbox" data-check="1"> Revisé que el equipo no esté roto ni gastado</label></li>
+      <li><label><input type="checkbox" data-check="2"> La señalización de zona ruidosa está visible en mi sector</label></li>
+    </ul>
+    <div class="tool-streak">
+      <span class="tool-streak-number" id="toolStreakNumber">0</span>
+      <span class="tool-streak-label">días de racha</span>
+    </div>
+  </div>
+</section>
+
+    <!-- POR QUÉ IMPORTA (para la empresa) -->
+<section class="screen" id="screen-empresa" data-screen hidden>
+  <p class="eyebrow">Para quienes deciden</p>
+  <h2 class="screen-title">Por qué esto importa</h2>
+  <p class="hero-sub">La hipoacusia laboral no es solo un tema de bienestar: tiene un costo medible para la empresa.</p>
+
+  <div class="stat-card">
+    <span class="stat-number">1ª</span>
+    <p class="stat-text">La hipoacusia inducida por ruido es una de las enfermedades profesionales más denunciadas en entornos industriales <span class="stat-src">(OIT)</span></p>
+  </div>
+  <div class="stat-card">
+    <span class="stat-number">+</span>
+    <p class="stat-text">Los puestos con exposición a ruido sin control muestran más ausentismo y rotación asociados a fatiga y estrés auditivo <span class="stat-src">(estimación general del sector)</span></p>
+  </div>
+  <div class="stat-card">
+    <span class="stat-number">$</span>
+    <p class="stat-text">Prevenir con EPP adecuado y capacitación cuesta una fracción de lo que implican licencias, indemnizaciones y reemplazo de personal capacitado</p>
+  </div>
+
+  <p class="tool-note">Esta app busca ser un primer paso simple y medible: educar, generar el hábito y dejar un registro (el certificado) de quién completó la capacitación.</p>
+</section>
+
+  
   <!-- Botón escudo: navegación principal -->
   <button class="shield-nav" id="shieldNav" type="button" aria-label="Abrir menú">
     <svg viewBox="0 0 200 220" aria-hidden="true">
@@ -382,13 +446,29 @@
   <nav class="menu" id="menu" hidden>
     <div class="menu-grid" aria-hidden="true"></div>
     <button class="menu-close" id="menuClose" type="button" aria-label="Cerrar menú">Cerrar</button>
-    <ul class="menu-list">
-      <li><button type="button" data-goto="inicio">Inicio</button></li>
-      <li><button type="button" data-goto="simulador">Simulador de exposición</button></li>
-      <li><button type="button" data-goto="epp">Equipos de protección</button></li>
-      <li><button type="button" data-goto="oido">Modelo del oído<span class="tag">Próx.</span></button></li>
-      <li><button type="button" data-goto="test">Test y certificado<span class="tag">Próx.</span></button></li>
-    </ul>
+
+    <div class="menu-cube-stage">
+      <div class="menu-cube" id="menuCube">
+        <ul class="menu-list menu-face menu-face-front">
+          <li><button type="button" data-goto="inicio">Inicio</button></li>
+          <li><button type="button" data-goto="simulador">Simulador de exposición</button></li>
+          <li><button type="button" data-goto="epp">Equipos de protección</button></li>
+          <li><button type="button" data-goto="oido">Modelo del oído</button></li>
+          <li><button type="button" data-goto="test">Test y certificado</button></li>
+        </ul>
+        <ul class="menu-list menu-face menu-face-back">
+          <li><button type="button" data-goto="herramientas">Herramientas<span class="tag tag-new">Nuevo</span></button></li>
+          <li><button type="button" data-goto="empresa">Por qué importa<span class="tag tag-new">Nuevo</span></button></li>
+          <li><button type="button" class="menu-soon" disabled>Más próximamente<span class="tag">Próx.</span></button></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="menu-pager">
+      <button type="button" class="menu-pager-dot active" id="menuDot0" aria-label="Página 1"></button>
+      <button type="button" class="menu-pager-dot" id="menuDot1" aria-label="Página 2"></button>
+    </div>
+    <button type="button" class="menu-page-btn" id="menuPageBtn">Más secciones ⟩</button>
   </nav>
 
 </div>
