@@ -645,7 +645,7 @@ body::before {
   * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
 
-
+.menu[hidden] { display: none; }
 
 /* ---- Modelo del oído ---- */
 .ear-diagram-wrap { margin-bottom: 14px; }
