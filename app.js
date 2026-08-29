@@ -109,7 +109,7 @@ function playAlerta() {
   const safeTimeEl = document.getElementById("safeTime");
   const readoutNoteEl = document.getElementById("readoutNote");
   const riskLabelEl = document.getElementById("riskLabel");
-  const earGlowEl = document.getElementById("earGlow");
+  const earStageEl = document.getElementById("earPhotoStage");
   const bandEl = document.getElementById("protectBand");
   const earmuffEl = document.getElementById("protectEarmuff");
   const plugFoamEl = document.getElementById("protectPlugFoam");
@@ -143,7 +143,7 @@ function playAlerta() {
 
   function ringSpeed(effectiveDb) {
     const intensity = Math.min(1, Math.max(0, (effectiveDb - 40) / 100));
-    return (2.2 - intensity * 1.7).toFixed(2);
+    return (1.8 - intensity * 1.4).toFixed(2);
   }
 
   function applyProtectionVisual(kind) {
@@ -169,7 +169,6 @@ function playAlerta() {
     const risk = riskState(effectiveDb);
     riskLabelEl.textContent = risk.label;
     riskLabelEl.style.color = risk.color;
-    earGlowEl.style.background = risk.color;
 
     if (risk.key === "safe") {
       readoutNoteEl.textContent = attenuation > 0
@@ -187,12 +186,13 @@ function playAlerta() {
 
     const speed = ringSpeed(effectiveDb);
     const intensity = Math.min(1, Math.max(0, (effectiveDb - 40) / 100));
-    earGlowEl.style.setProperty("--ring-speed", `${speed}s`);
-    earGlowEl.style.setProperty("--ring-amp", (1.1 + intensity * 0.3).toFixed(3));
+    earStageEl.style.setProperty("--wave-color", risk.color);
+    earStageEl.style.setProperty("--wave-speed", `${speed}s`);
+    earStageEl.style.setProperty("--wave-max", (2.4 + intensity * 1.8).toFixed(2));
 
     if (risk.key === "danger" && !wasDanger) {
       if (navigator.vibrate) navigator.vibrate([40, 60, 40]);
-      playSound("alerta");
+      playAlerta();
     }
     wasDanger = risk.key === "danger";
 
