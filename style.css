@@ -648,24 +648,38 @@ body::before {
 .menu[hidden] { display: none; }
 
 /* ---- Modelo del oído ---- */
-.ear-diagram-wrap { margin-bottom: 14px; }
-.ear-diagram { width: 100%; height: auto; color: var(--mist); }
-.ear-zone { fill: var(--mist); stroke: var(--mist); opacity: 0.4; transition: opacity 0.3s ease, color 0.3s ease; }
-.ear-zone.zone-active { opacity: 1; color: var(--hologram); stroke: var(--hologram); fill: var(--hologram); }
+.ear-diagram-wrap { margin-bottom: 16px; }
+.ear-diagram { width: 100%; height: auto; }
+.ear-label { font-family: var(--font-mono); font-size: 13px; fill: var(--mist); transition: fill 0.3s ease; }
+.ear-label.zone-active { fill: var(--hologram); }
+.ear-leader { stroke: var(--border); stroke-width: 1; stroke-dasharray: 2 3; transition: stroke 0.3s ease, opacity 0.3s ease; }
+.ear-leader.zone-active { stroke: var(--hologram); opacity: 0.8; }
 
-.ear-zone-buttons { display: flex; gap: 8px; margin-bottom: 12px; }
+.ear-shape { fill: none; stroke: var(--mist); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; opacity: 0.45; transition: stroke 0.3s ease, opacity 0.3s ease; }
+.ear-node { fill: var(--mist); stroke: none; opacity: 0.5; transition: fill 0.3s ease, opacity 0.3s ease; }
+.ear-canal { stroke-width: 14; opacity: 0.3; }
+.ear-membrane { stroke-width: 4; }
+.ear-tube { stroke-width: 8; opacity: 0.3; }
+.ear-cochlea { stroke-width: 3; }
+
+.ear-part.zone-active .ear-shape { stroke: var(--hologram); opacity: 1; }
+.ear-part.zone-active .ear-node { fill: var(--hologram); opacity: 1; }
+
+.ear-zone-buttons { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 12px; scrollbar-width: none; }
+.ear-zone-buttons::-webkit-scrollbar { display: none; }
 .ear-zone-btn {
-  flex: 1;
-  padding: 9px 6px;
-  border-radius: 10px;
+  flex-shrink: 0;
+  padding: 9px 13px;
+  border-radius: 999px;
   border: 1px solid var(--border);
   background: var(--ink-2);
   color: var(--mist);
   font-family: var(--font-fun);
-  font-size: 11.5px;
+  font-size: 12.5px;
+  white-space: nowrap;
 }
 .ear-zone-btn.active { border-color: var(--hologram); color: var(--hologram); }
-.ear-zone-desc { font-size: 13px; color: var(--mist); line-height: 1.5; margin-bottom: 22px; }
+.ear-zone-desc { font-size: 14px; color: var(--mist); line-height: 1.55; margin-bottom: 22px; }
 
 .cilia-panel { background: var(--ink-2); border: 1px solid var(--border); border-radius: 18px; padding: 18px; }
 .cilia-title { font-size: 15px; margin-bottom: 10px; }
@@ -708,3 +722,19 @@ body::before {
 .quiz-result { background: var(--ink-2); border: 1px solid var(--border); border-radius: 18px; padding: 30px 20px; text-align: center; }
 .quiz-result-score { font-family: var(--font-poster); font-size: 40px; color: var(--hologram); display: block; margin-bottom: 10px; }
 .quiz-result-text { font-size: 13.5px; color: var(--mist); line-height: 1.5; margin-bottom: 18px; }
+
+
+/* ---- Ajustes de tipografía: más grande y legible ---- */
+.eyebrow { font-size: 12px; }
+.hero-sub { font-size: 16px; }
+.stat-text { font-size: 14px; }
+.db-ref { font-size: 13.5px; }
+.protect-btn { font-size: 13px; }
+.readout-value { font-size: 20px; }
+.readout-note { font-size: 13.5px; }
+.stub-text { font-size: 14.5px; }
+.cilia-note { font-size: 13.5px; }
+.epp-card p { font-size: 14px; }
+.quiz-question { font-size: 17px; }
+.quiz-option { font-size: 14.5px; }
+.quiz-feedback { font-size: 14px; }
