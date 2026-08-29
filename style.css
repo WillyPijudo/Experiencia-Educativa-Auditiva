@@ -27,7 +27,7 @@
   --safe-area-t: env(safe-area-inset-top, 0px);
 }
 
-* { box-sizing: border-box; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body { height: 100%; }
 body {
   margin: 0;
@@ -36,10 +36,17 @@ body {
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+  touch-action: manipulation; /* saca el delay de 300ms al tocar en mobile */
 }
 h1, h2, h3 { margin: 0; font-family: var(--font-display); }
 p { margin: 0; }
-button { font-family: inherit; cursor: pointer; }
+button {
+  font-family: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+}
 ul { list-style: none; margin: 0; padding: 0; }
 
 /* Fondo ambiental: una veta de luz muy tenue, en toda la app */
@@ -48,6 +55,7 @@ body::before {
   position: fixed;
   inset: 0;
   z-index: -1;
+  pointer-events: none;
   background:
     radial-gradient(60% 40% at 50% 0%, rgba(79,214,255,0.10), transparent 70%),
     radial-gradient(50% 30% at 20% 100%, rgba(255,92,122,0.06), transparent 70%);
@@ -73,29 +81,64 @@ body::before {
 .boot.boot-hide { animation: boot-fade-out 0.6s ease forwards; }
 @keyframes boot-fade-out { to { opacity: 0; visibility: hidden; } }
 
+/* IMPORTANTE: estos elementos son puramente decorativos (fondo del
+   arranque) y por eso llevan pointer-events:none. Antes no lo tenían,
+   y un div transparente cubriendo toda la pantalla -aunque no se
+   "vea"- igual tapa los toques. Ese era el bug de los botones en el
+   celular: en mobile Safari, un fondo con transform 3D (el grid con
+   perspective/rotateX que tenía antes) puede además calcular su
+   "zona de toque" mal, tapando justo donde estaba el botón "Entrar".
+   Por eso también lo cambié por una versión 2D, más simple y segura. */
 .boot-grid {
   position: absolute;
-  inset: -10%;
+  inset: 0;
+  pointer-events: none;
   background-image:
-    linear-gradient(rgba(79,214,255,0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(79,214,255,0.06) 1px, transparent 1px);
-  background-size: 34px 34px;
-  transform: perspective(600px) rotateX(58deg);
-  transform-origin: center 30%;
-  animation: grid-drift 9s linear infinite;
-  opacity: 0.55;
+    linear-gradient(rgba(79,214,255,0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(79,214,255,0.07) 1px, transparent 1px);
+  background-size: 32px 32px;
+  animation: grid-drift 12s linear infinite;
+  opacity: 0.5;
+  -webkit-mask-image: radial-gradient(80% 60% at 50% 40%, #000 40%, transparent 90%);
+  mask-image: radial-gradient(80% 60% at 50% 40%, #000 40%, transparent 90%);
 }
-@keyframes grid-drift { from { background-position: 0 0; } to { background-position: 0 340px; } }
+@keyframes grid-drift { from { background-position: 0 0; } to { background-position: 32px 32px; } }
 
 .boot-scan {
   position: absolute;
   left: 0; right: 0;
   height: 2px;
+  pointer-events: none;
   background: linear-gradient(90deg, transparent, var(--hologram), transparent);
   box-shadow: 0 0 14px 2px var(--hologram);
   animation: scan-sweep 2.6s ease-in-out infinite;
   opacity: 0.8;
 }
+
+.boot-particles { position: absolute; inset: 0; pointer-events: none; }
+.boot-particles span {
+  position: absolute;
+  width: 3px; height: 3px;
+  border-radius: 50%;
+  background: var(--hologram);
+  opacity: 0;
+  box-shadow: 0 0 6px 1px var(--hologram);
+  animation: particle-float 4.5s ease-in infinite;
+}
+@keyframes particle-float {
+  0%   { opacity: 0; transform: translateY(0); }
+  15%  { opacity: 0.8; }
+  85%  { opacity: 0.3; }
+  100% { opacity: 0; transform: translateY(-120px); }
+}
+.boot-particles span:nth-child(1) { left: 18%; top: 70%; animation-delay: 0s; }
+.boot-particles span:nth-child(2) { left: 30%; top: 82%; animation-delay: 0.7s; }
+.boot-particles span:nth-child(3) { left: 46%; top: 88%; animation-delay: 1.4s; }
+.boot-particles span:nth-child(4) { left: 58%; top: 76%; animation-delay: 0.35s; }
+.boot-particles span:nth-child(5) { left: 68%; top: 85%; animation-delay: 2.1s; }
+.boot-particles span:nth-child(6) { left: 78%; top: 68%; animation-delay: 1.05s; }
+.boot-particles span:nth-child(7) { left: 40%; top: 92%; animation-delay: 2.8s; }
+.boot-particles span:nth-child(8) { left: 88%; top: 80%; animation-delay: 1.75s; }
 @keyframes scan-sweep {
   0%   { top: 12%; opacity: 0; }
   8%   { opacity: 0.9; }
@@ -177,12 +220,24 @@ body::before {
 
 .topbar {
   padding: calc(16px + var(--safe-area-t)) 20px 12px;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
+.topbar-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--mint);
+  box-shadow: 0 0 8px 1px var(--mint);
+  animation: dot-pulse 1.8s ease-in-out infinite;
+  flex-shrink: 0;
+}
+@keyframes dot-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
 .topbar-mark {
   font-family: var(--font-display);
-  font-size: 14px;
-  letter-spacing: 3px;
+  font-size: 13px;
+  letter-spacing: 2.5px;
   color: var(--paper);
 }
 .topbar-mark span { color: var(--hologram); }
@@ -192,9 +247,18 @@ body::before {
   padding: 8px 22px calc(120px + var(--safe-area-b));
   max-width: 460px;
   margin: 0 auto;
-  animation: screen-in 0.35s ease both;
 }
-@keyframes screen-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.screen > * {
+  animation: screen-in 0.45s cubic-bezier(0.2,0.8,0.25,1) both;
+}
+.screen > *:nth-child(1) { animation-delay: 0.02s; }
+.screen > *:nth-child(2) { animation-delay: 0.07s; }
+.screen > *:nth-child(3) { animation-delay: 0.12s; }
+.screen > *:nth-child(4) { animation-delay: 0.17s; }
+.screen > *:nth-child(5) { animation-delay: 0.22s; }
+.screen > *:nth-child(6) { animation-delay: 0.27s; }
+.screen > *:nth-child(7) { animation-delay: 0.32s; }
+@keyframes screen-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 
 .eyebrow {
   font-family: var(--font-mono);
@@ -489,6 +553,7 @@ body::before {
 .menu-grid {
   position: absolute;
   inset: -20%;
+  pointer-events: none;
   background-image:
     linear-gradient(rgba(79,214,255,0.05) 1px, transparent 1px),
     linear-gradient(90deg, rgba(79,214,255,0.05) 1px, transparent 1px);
