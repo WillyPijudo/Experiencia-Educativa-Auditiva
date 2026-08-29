@@ -805,63 +805,54 @@ body::before {
 
 
 
-.ear-photo-stage { position: relative; width: 100%; max-width: 220px; margin: 0 auto 30px; aspect-ratio: 496 / 800; }
-.ear-photo { width: 100%; height: 100%; object-fit: contain; display: block; filter: drop-shadow(0 8px 20px rgba(0,0,0,0.4)); }
-
-.ear-glow {
-  position: absolute; left: 33%; top: 52%;
-  width: 20%; height: 13%;
-  border-radius: 50%;
-  background: var(--mint);
-  opacity: 0.55;
-  filter: blur(5px);
-  transform: translate(-50%, -50%) scale(1);
-  animation: glow-pulse var(--ring-speed, 1.8s) ease-in-out infinite;
-  transition: background 0.3s ease;
+.ear-photo-stage { position: relative; width: 100%; max-width: 132px; margin: 0 auto 54px; aspect-ratio: 496 / 800; }
+.ear-photo { width: 100%; height: 100%; object-fit: contain; display: block; filter: drop-shadow(0 6px 14px rgba(0,0,0,0.45)) saturate(1.08) contrast(1.04); }
+.ear-light {
+  position: absolute; inset: 0; border-radius: 40%;
+  background:
+    radial-gradient(circle at 32% 22%, rgba(255,255,255,0.35), transparent 55%),
+    radial-gradient(circle at 70% 80%, rgba(0,0,0,0.28), transparent 60%);
+  mix-blend-mode: overlay;
   pointer-events: none;
 }
-@keyframes glow-pulse {
-  0%, 100% { transform: translate(-50%, -50%) scale(1); }
-  50% { transform: translate(-50%, -50%) scale(var(--ring-amp, 1.15)); }
-}
 
-.protect-band {
-  position: absolute; left: 6%; right: 6%; top: -4%; height: 14px;
-  border-radius: 999px;
-  background: linear-gradient(180deg, #3a3f4a, #14161a);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.4);
-  opacity: 0; transform: scaleX(0.7);
-  transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.2,0.9,0.25,1.15);
-}
-.protect-band.active { opacity: 1; transform: scaleX(1); }
-
-.protect-earmuff {
-  position: absolute; left: 8%; top: 30%; width: 62%; height: 40%;
+.sound-waves { position: absolute; left: 33%; top: 52%; width: 0; height: 0; pointer-events: none; }
+.wave-ring {
+  position: absolute; left: 0; top: 0;
+  width: 26px; height: 26px;
+  margin-left: -13px; margin-top: -13px;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #454b58, #14161a 75%);
-  box-shadow: 0 10px 22px rgba(0,0,0,0.5), inset 0 -6px 12px rgba(0,0,0,0.4), inset 0 5px 8px rgba(255,255,255,0.08);
-  opacity: 0; transform: scale(0.6);
-  transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.2,0.9,0.25,1.2);
-}
-.protect-earmuff.active { opacity: 0.96; transform: scale(1); }
-
-.protect-plug {
-  position: absolute; left: 33%; top: 52%; width: 15%; height: 10%;
-  border-radius: 50%;
-  transform: translate(-50%, calc(-50% - 14px)) scale(0.5);
+  border: 2px solid var(--wave-color, var(--mint));
   opacity: 0;
-  transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.2,0.9,0.25,1.2);
+  animation: wave-out var(--wave-speed, 1.8s) ease-out infinite;
 }
-.protect-plug.active { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-.protect-plug-foam { background: radial-gradient(circle at 35% 30%, #ffe3c4, #d99a5b 75%); box-shadow: 0 3px 6px rgba(0,0,0,0.4), inset 0 -2px 4px rgba(0,0,0,0.3); }
-.protect-plug-molded { background: radial-gradient(circle at 35% 30%, #d7ecff, #6fa8dc 75%); box-shadow: 0 3px 6px rgba(0,0,0,0.4), inset 0 -2px 4px rgba(0,0,0,0.3); }
+.wave-ring:nth-child(2) { animation-delay: calc(var(--wave-speed, 1.8s) / 3); }
+.wave-ring:nth-child(3) { animation-delay: calc(var(--wave-speed, 1.8s) / 3 * 2); }
+@keyframes wave-out {
+  0% { transform: scale(0.4); opacity: 0.9; }
+  80% { opacity: 0.15; }
+  100% { transform: scale(var(--wave-max, 3.2)); opacity: 0; }
+}
+
+.eq-bars { position: absolute; left: 50%; bottom: -16px; transform: translateX(-50%); display: flex; align-items: flex-end; gap: 3px; height: 14px; }
+.eq-bars span { width: 3px; border-radius: 2px; background: var(--wave-color, var(--mint)); opacity: 0.85; animation: eq-bounce var(--wave-speed, 1.8s) ease-in-out infinite; }
+.eq-bars span:nth-child(1) { height: 40%; animation-delay: 0s; }
+.eq-bars span:nth-child(2) { height: 70%; animation-delay: 0.1s; }
+.eq-bars span:nth-child(3) { height: 100%; animation-delay: 0.2s; }
+.eq-bars span:nth-child(4) { height: 65%; animation-delay: 0.3s; }
+.eq-bars span:nth-child(5) { height: 45%; animation-delay: 0.4s; }
+@keyframes eq-bounce { 0%, 100% { transform: scaleY(0.4); } 50% { transform: scaleY(1); } }
 
 .eardrum-label {
-  position: absolute; left: 50%; bottom: -22px;
+  position: absolute; left: 50%; bottom: -42px;
   transform: translateX(-50%);
   font-family: var(--font-mono);
   font-size: 11px; letter-spacing: 2px;
   color: var(--mint);
   transition: color 0.3s ease;
   white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wave-ring, .eq-bars span { animation: none; opacity: 0.5; }
 }
