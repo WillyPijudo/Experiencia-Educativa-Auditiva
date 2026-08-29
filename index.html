@@ -7,7 +7,7 @@
 <title>Protección Auditiva</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Fredoka:wght@500;600;700&family=Bungee&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Fredoka:wght@500;600;700&family=Bungee&family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -364,7 +364,7 @@
   </div>
 </section>
 
-  </main>
+
 
     <!-- HERRAMIENTAS -->
 <section class="screen" id="screen-herramientas" data-screen hidden>
@@ -428,6 +428,24 @@
 
   <p class="tool-note">Esta app busca ser un primer paso simple y medible: educar, generar el hábito y dejar un registro (el certificado) de quién completó la capacitación.</p>
 </section>
+
+</main>
+    
+
+  <!-- Cinemática del certificado -->
+  <div class="cert-cinema" id="certCinema" hidden>
+    <div class="cert-cinema-inner">
+      <svg class="cert-seal-svg" viewBox="0 0 220 220" aria-hidden="true">
+        <circle class="cert-seal-ring" cx="110" cy="110" r="86"/>
+        <circle class="cert-seal-ring-2" cx="110" cy="110" r="70"/>
+        <path class="cert-seal-check" d="M76 112 L100 136 L148 84"/>
+      </svg>
+      <svg class="cert-sign-svg" viewBox="0 0 320 100" aria-hidden="true">
+        <path class="cert-sign-path" d="M20 70 C 40 20, 60 20, 75 55 C 85 78, 95 40, 110 45 C 125 50, 120 75, 140 60 C 160 45, 165 25, 185 40 C 205 55, 200 75, 225 65 C 250 55, 255 30, 280 45 C 295 54, 298 60, 300 62"/>
+      </svg>
+      <p class="cert-cinema-text" id="certCinemaText">Validando capacitación…</p>
+    </div>
+  </div>
 
   
   <!-- Botón escudo: navegación principal -->
