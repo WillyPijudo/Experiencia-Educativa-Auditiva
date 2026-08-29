@@ -869,6 +869,7 @@ function playAlerta() {
   if (certBtn) {
     certBtn.addEventListener("click", () => {
       const name = (certNameInput.value || "").trim() || "Trabajador/a";
+      const code = `ES-${new Date().getFullYear()}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
       certBtn.disabled = true;
       certCinema.hidden = false;
       certCinemaText.textContent = "Validando capacitación…";
