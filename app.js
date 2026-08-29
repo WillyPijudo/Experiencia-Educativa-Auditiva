@@ -2,8 +2,6 @@
 // ESCUDO SONORO — lógica de la app
 // ==========================================================
 
-// ---- Arranque: la secuencia holográfica ya corre sola por CSS.
-// Acá solo esperamos a que el usuario toque "Entrar".
 (function boot() {
   const bootEl = document.getElementById("boot");
   const appEl = document.getElementById("app");
@@ -47,18 +45,20 @@
 (function simulator() {
   const slider = document.getElementById("dbSlider");
   const dbValueEl = document.getElementById("dbValue");
-  const protectSwitch = document.getElementById("protectSwitch");
-  const protectStateEl = document.getElementById("protectState");
+  const protectButtons = document.querySelectorAll(".protect-btn");
   const effectiveDbEl = document.getElementById("effectiveDb");
   const safeTimeEl = document.getElementById("safeTime");
   const readoutNoteEl = document.getElementById("readoutNote");
   const riskLabelEl = document.getElementById("riskLabel");
   const eardrumSvg = document.getElementById("eardrumSvg");
   const refButtons = document.querySelectorAll(".db-ref");
+  const compareBtn = document.getElementById("compareBtn");
+  const comparePanel = document.getElementById("comparePanel");
   if (!slider) return;
 
-  // Atenuación típica de un protector auditivo bien calzado (NRR promedio).
-  const PROTECTION_ATTENUATION = 24;
+  let attenuation = 0;
+  let compareOn = false;
+  let wasDanger = false;
 
   function safeMinutes(effectiveDb) {
     if (effectiveDb <= 80) return Infinity;
@@ -79,13 +79,16 @@
     return { key: "danger", label: "PELIGRO", color: "var(--signal)" };
   }
 
+  function ringSpeed(effectiveDb) {
+    const intensity = Math.min(1, Math.max(0, (effectiveDb - 40) / 100));
+    return (2.2 - intensity * 1.7).toFixed(2); // de 2.2s (calmo) a 0.5s (frenético)
+  }
+
   function update() {
     const rawDb = Number(slider.value);
-    const protectedOn = protectSwitch.checked;
-    const effectiveDb = Math.max(20, protectedOn ? rawDb - PROTECTION_ATTENUATION : rawDb);
+    const effectiveDb = Math.max(20, rawDb - attenuation);
 
     dbValueEl.textContent = rawDb;
-    protectStateEl.textContent = protectedOn ? "Activada" : "Desactivada";
     effectiveDbEl.textContent = `${Math.round(effectiveDb)} dB`;
 
     const minutes = safeMinutes(effectiveDb);
@@ -97,35 +100,79 @@
     eardrumSvg.querySelector(".membrane").style.fill = risk.color;
 
     if (risk.key === "safe") {
-      readoutNoteEl.textContent = protectedOn
-        ? "Con protección, este nivel no representa riesgo en toda la jornada."
+      readoutNoteEl.textContent = attenuation > 0
+        ? "Con esta protección, este nivel no representa riesgo en toda la jornada."
         : "Con este nivel podés trabajar la jornada completa sin riesgo.";
     } else if (risk.key === "caution") {
-      readoutNoteEl.textContent = protectedOn
+      readoutNoteEl.textContent = attenuation > 0
         ? "Todavía conviene limitar el tiempo de exposición, aunque estés protegido."
         : "A partir de acá, cada 3 dB de más reduce el tiempo seguro a la mitad. Usá protección.";
     } else {
-      readoutNoteEl.textContent = protectedOn
+      readoutNoteEl.textContent = attenuation > 0
         ? "Nivel muy alto: incluso con protección, minimizá el tiempo de exposición."
         : "Riesgo inmediato de daño auditivo. Protección obligatoria.";
     }
 
-    // Animación del tímpano: más intensidad = pulso más rápido y más amplio.
+    const speed = ringSpeed(effectiveDb);
     const intensity = Math.min(1, Math.max(0, (effectiveDb - 40) / 100));
-    const speed = 2.2 - intensity * 1.7; // de 2.2s (calmo) a 0.5s (frenético)
-    eardrumSvg.style.setProperty("--ring-speed", `${speed.toFixed(2)}s`);
+    eardrumSvg.style.setProperty("--ring-speed", `${speed}s`);
     eardrumSvg.style.setProperty("--ring-amp", (1.04 + intensity * 0.22).toFixed(3));
     eardrumSvg.style.setProperty("--mem-amp", (1.02 + intensity * 0.14).toFixed(3));
+
+    // Vibración al entrar en zona de peligro (una sola vez por transición)
+    if (risk.key === "danger" && !wasDanger && navigator.vibrate) {
+      navigator.vibrate([40, 60, 40]);
+    }
+    wasDanger = risk.key === "danger";
+
+    if (compareOn) updateCompare(rawDb);
+  }
+
+  function updateCompare(rawDb) {
+    const dbNone = rawDb;
+    const dbProt = Math.max(20, rawDb - attenuation);
+    const riskNone = riskState(dbNone);
+    const riskProt = riskState(dbProt);
+
+    document.getElementById("compareDbNone").textContent = `${dbNone} dB`;
+    document.getElementById("compareDbProt").textContent = `${Math.round(dbProt)} dB`;
+    document.getElementById("compareRiskNone").textContent = riskNone.label;
+    document.getElementById("compareRiskNone").style.color = riskNone.color;
+    document.getElementById("compareRiskProt").textContent = riskProt.label;
+    document.getElementById("compareRiskProt").style.color = riskProt.color;
+
+    document.querySelector("#miniNone .mini-dot").style.background = riskNone.color;
+    document.querySelector("#miniProt .mini-dot").style.background = riskProt.color;
+    document.getElementById("miniNone").style.setProperty("--ring-speed", `${ringSpeed(dbNone)}s`);
+    document.getElementById("miniProt").style.setProperty("--ring-speed", `${ringSpeed(dbProt)}s`);
   }
 
   slider.addEventListener("input", update);
-  protectSwitch.addEventListener("change", update);
+
+  protectButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      protectButtons.forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      attenuation = Number(btn.dataset.atten);
+      update();
+    });
+  });
+
   refButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
       slider.value = btn.dataset.db;
       update();
     });
   });
+
+  if (compareBtn) {
+    compareBtn.addEventListener("click", () => {
+      compareOn = !compareOn;
+      comparePanel.hidden = !compareOn;
+      compareBtn.textContent = compareOn ? "Ocultar comparación" : "Comparar con / sin protección";
+      if (compareOn) updateCompare(Number(slider.value));
+    });
+  }
 
   update();
 })();
