@@ -2,15 +2,55 @@
 // ESCUDO SONORO — lógica de la app
 // ==========================================================
 
+
+const SOUND = {
+  click: new Audio("audio/click.mp3"),
+  intro: new Audio("audio/intro.mp3"),
+  alerta: new Audio("audio/alerta.mp3"),
+};
+SOUND.intro.loop = true;
+SOUND.intro.volume = 0.5;
+
+function playSound(name) {
+  const audio = SOUND[name];
+  if (!audio) return;
+  try { audio.currentTime = 0; audio.play().catch(() => {}); } catch (e) {}
+}
+
+function fadeOutIntro() {
+  const step = 0.05;
+  const id = setInterval(() => {
+    if (SOUND.intro.volume > step) {
+      SOUND.intro.volume -= step;
+    } else {
+      SOUND.intro.pause();
+      SOUND.intro.currentTime = 0;
+      SOUND.intro.volume = 0.5;
+      clearInterval(id);
+    }
+  }, 60);
+}
+
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest("button");
+  if (btn && btn.id !== "bootEnter") playSound("click");
+});
+
+
+
 (function boot() {
   const bootEl = document.getElementById("boot");
   const appEl = document.getElementById("app");
   const enterBtn = document.getElementById("bootEnter");
 
   enterBtn.addEventListener("click", () => {
+    playSound("intro");
     bootEl.classList.add("boot-hide");
     appEl.hidden = false;
-    setTimeout(() => { bootEl.hidden = true; }, 650);
+    setTimeout(() => {
+      bootEl.hidden = true;
+      fadeOutIntro();
+    }, 650);
   });
 })();
 
@@ -55,7 +95,11 @@
   const safeTimeEl = document.getElementById("safeTime");
   const readoutNoteEl = document.getElementById("readoutNote");
   const riskLabelEl = document.getElementById("riskLabel");
-  const eardrumSvg = document.getElementById("eardrumSvg");
+  const earGlowEl = document.getElementById("earGlow");
+  const bandEl = document.getElementById("protectBand");
+  const earmuffEl = document.getElementById("protectEarmuff");
+  const plugFoamEl = document.getElementById("protectPlugFoam");
+  const plugMoldedEl = document.getElementById("protectPlugMolded");
   const refButtons = document.querySelectorAll(".db-ref");
   const compareBtn = document.getElementById("compareBtn");
   const comparePanel = document.getElementById("comparePanel");
@@ -67,7 +111,6 @@
 
   function safeMinutes(effectiveDb) {
     if (effectiveDb <= 80) return Infinity;
-    // Regla de intercambio 3 dB: 85 dB = 480 min, cada +3 dB parte el tiempo a la mitad.
     return 480 / Math.pow(2, (effectiveDb - 85) / 3);
   }
 
@@ -86,7 +129,17 @@
 
   function ringSpeed(effectiveDb) {
     const intensity = Math.min(1, Math.max(0, (effectiveDb - 40) / 100));
-    return (2.2 - intensity * 1.7).toFixed(2); // de 2.2s (calmo) a 0.5s (frenético)
+    return (2.2 - intensity * 1.7).toFixed(2);
+  }
+
+  function applyProtectionVisual(kind) {
+    const showMuff = kind === "orejeras" || kind === "doble";
+    const showFoam = kind === "espuma" || kind === "doble";
+    const showMolded = kind === "moldeado";
+    bandEl.classList.toggle("active", showMuff);
+    earmuffEl.classList.toggle("active", showMuff);
+    plugFoamEl.classList.toggle("active", showFoam);
+    plugMoldedEl.classList.toggle("active", showMolded);
   }
 
   function update() {
@@ -102,7 +155,7 @@
     const risk = riskState(effectiveDb);
     riskLabelEl.textContent = risk.label;
     riskLabelEl.style.color = risk.color;
-    eardrumSvg.querySelector(".membrane").style.fill = risk.color;
+    earGlowEl.style.background = risk.color;
 
     if (risk.key === "safe") {
       readoutNoteEl.textContent = attenuation > 0
@@ -120,22 +173,14 @@
 
     const speed = ringSpeed(effectiveDb);
     const intensity = Math.min(1, Math.max(0, (effectiveDb - 40) / 100));
-    eardrumSvg.style.setProperty("--ring-speed", `${speed}s`);
-    eardrumSvg.style.setProperty("--ring-amp", (1.04 + intensity * 0.22).toFixed(3));
-    eardrumSvg.style.setProperty("--mem-amp", (1.02 + intensity * 0.14).toFixed(3));
+    earGlowEl.style.setProperty("--ring-speed", `${speed}s`);
+    earGlowEl.style.setProperty("--ring-amp", (1.1 + intensity * 0.3).toFixed(3));
 
-    // Vibración al entrar en zona de peligro (una sola vez por transición)
-    if (risk.key === "danger" && !wasDanger && navigator.vibrate) {
-      navigator.vibrate([40, 60, 40]);
+    if (risk.key === "danger" && !wasDanger) {
+      if (navigator.vibrate) navigator.vibrate([40, 60, 40]);
+      playSound("alerta");
     }
     wasDanger = risk.key === "danger";
-
-        let closestBtn = null, closestDiff = Infinity;
-    refButtons.forEach((btn) => {
-      const diff = Math.abs(rawDb - Number(btn.dataset.db));
-      if (diff < closestDiff) { closestDiff = diff; closestBtn = btn; }
-    });
-    refButtons.forEach((btn) => btn.classList.toggle("db-ref-active", btn === closestBtn && closestDiff <= 4));
 
     if (compareOn) updateCompare(rawDb);
   }
@@ -166,6 +211,7 @@
       protectButtons.forEach((b) => b.classList.remove("active"));
       btn.classList.add("active");
       attenuation = Number(btn.dataset.atten);
+      applyProtectionVisual(btn.dataset.kind);
       update();
     });
   });
@@ -186,9 +232,9 @@
     });
   }
 
+  applyProtectionVisual("ninguna");
   update();
 })();
-
 
 // ---- Modelo del oído: zonas + simulación de células ciliadas ----
 (function earModel() {
