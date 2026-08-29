@@ -435,6 +435,7 @@ function playAlerta() {
     slider: "Estimar",
     scenario: "Comparar escenarios",
     timeline: "Línea de tiempo",
+    aging: "Comparar exposición",
   };
 
   function riskColor(effectiveDb) {
@@ -494,6 +495,18 @@ function playAlerta() {
     { type: "timeline", q: "Ese mismo trabajador empieza a usar protección adecuada todos los días. ¿Qué pasa con el daño ya acumulado?",
       options: ["Se revierte con el tiempo", "Se frena: no se suma daño nuevo, pero lo perdido no vuelve", "Sigue avanzando igual de rápido", "Depende de la marca de la protección"],
       correct: 1, explain: "La protección no repara nada: evita que se sume MÁS daño. Lo que ya se perdió, no se recupera." },
+    { type: "aging", q: "Estos tres trabajadores llevan distinta cantidad de años en un puesto de 100 dB sin protección. ¿Cuál tiene el oído más dañado?",
+      people: [
+        { label: "6 meses en el puesto", years: 0.5, damage: 10 },
+        { label: "8 años en el puesto", years: 8, damage: 55 },
+        { label: "20 años en el puesto", years: 20, damage: 85 },
+      ], correct: 2, explain: "El daño se acumula con los años: a 20 años sin protección, la mayoría de las células ciliadas de esa zona ya están destruidas y no vuelven." },
+    { type: "aging", q: "Mismo puesto, 10 años de antigüedad, pero hábitos distintos. ¿Cuál probablemente tiene MENOS daño acumulado?",
+      people: [
+        { label: "10 años, sin protección nunca", years: 10, damage: 65 },
+        { label: "10 años, con protección desde el día 1", years: 10, damage: 8 },
+        { label: "10 años, protección solo \"a veces\"", years: 10, damage: 40 },
+      ], correct: 1, explain: "Usar protección desde el principio, todos los días, es lo que realmente frena el daño — no alcanza con usarla 'a veces'." },
   ];
 
   const TOTAL_QUESTIONS = 8;
@@ -510,7 +523,8 @@ function playAlerta() {
       ...byType("slider").slice(0, 1),
       ...byType("scenario").slice(0, 1),
       ...byType("timeline").slice(0, 1),
-      ...byType("mcq").slice(0, TOTAL_QUESTIONS - 6),
+      ...byType("aging").slice(0, 1),
+      ...byType("mcq").slice(0, TOTAL_QUESTIONS - 7),
     ];
     return shuffle(picked).map((item) => {
       if (item.type === "mcq") {
@@ -720,6 +734,40 @@ function playAlerta() {
     optionsEl.appendChild(grid);
   }
 
+
+  function renderAging(item) {
+    const grid = document.createElement("div");
+    grid.className = "aging-grid";
+    item.people.forEach((p, i) => {
+      const card = document.createElement("button");
+      card.type = "button";
+      card.className = "aging-card";
+      const deadCount = Math.round((p.damage / 100) * 10);
+      let bars = "";
+      for (let b = 0; b < 10; b++) {
+        bars += `<span class="aging-bar ${b < deadCount ? "aging-bar-dead" : ""}"></span>`;
+      }
+      const yearsLabel = p.years < 1 ? `${Math.round(p.years * 12)} meses` : `${p.years} años`;
+      card.innerHTML = `
+        <span class="aging-years">${yearsLabel}</span>
+        <div class="aging-bars">${bars}</div>
+        <span class="aging-damage">${p.damage}% de células ciliadas dañadas</span>
+        <span class="aging-label">${p.label}</span>`;
+      card.addEventListener("click", () => {
+        if (answered) return;
+        [...grid.children].forEach((c, idx) => {
+          c.disabled = true;
+          if (idx === item.correct) c.classList.add("quiz-correct");
+          else if (idx === i) c.classList.add("quiz-incorrect");
+        });
+        completeQuestion(i === item.correct, item.explain);
+      });
+      grid.appendChild(card);
+    });
+    optionsEl.appendChild(grid);
+  }
+
+  
   function renderTimelineViz() {
     const viz = document.createElement("div");
     viz.className = "mini-cilia-row";
@@ -751,6 +799,7 @@ function playAlerta() {
     else if (item.type === "order") renderOrder(item);
     else if (item.type === "slider") renderSlider(item);
     else if (item.type === "scenario") renderScenario(item);
+    else if (item.type === "aging") renderAging(item);
     else if (item.type === "timeline") { renderTimelineViz(); renderMCQ(item); }
   }
 
@@ -776,10 +825,22 @@ function playAlerta() {
   retryBtn.addEventListener("click", startQuiz);
 
   // ---- Certificado descargable (canvas, sin backend) ----
+  const certCinema = document.getElementById("certCinema");
+  const certCinemaText = document.getElementById("certCinemaText");
+
   if (certBtn) {
     certBtn.addEventListener("click", () => {
       const name = (certNameInput.value || "").trim() || "Trabajador/a";
-      drawCertificate(name, score, QUESTIONS.length);
+      certBtn.disabled = true;
+      certCinema.hidden = false;
+      certCinemaText.textContent = "Validando capacitación…";
+      setTimeout(() => { certCinemaText.textContent = "Sellando certificado…"; }, 1000);
+      setTimeout(() => { certCinemaText.textContent = "Firmando…"; }, 1550);
+      setTimeout(() => {
+        drawCertificate(name, score, QUESTIONS.length);
+        certCinema.hidden = true;
+        certBtn.disabled = false;
+      }, 2650);
     });
   }
 
@@ -789,7 +850,6 @@ function playAlerta() {
     canvas.height = 840;
     const ctx = canvas.getContext("2d");
 
-    // fondo degradé
     const bg = ctx.createLinearGradient(0, 0, 1200, 840);
     bg.addColorStop(0, "#0a0e17");
     bg.addColorStop(0.55, "#10182a");
@@ -797,14 +857,22 @@ function playAlerta() {
     ctx.fillStyle = bg;
     ctx.fillRect(0, 0, 1200, 840);
 
-    // resplandor superior
-    const glow = ctx.createRadialGradient(600, 40, 40, 600, 40, 520);
-    glow.addColorStop(0, "rgba(79,214,255,0.18)");
+    const glow = ctx.createRadialGradient(600, 40, 40, 600, 40, 560);
+    glow.addColorStop(0, "rgba(79,214,255,0.20)");
     glow.addColorStop(1, "rgba(79,214,255,0)");
     ctx.fillStyle = glow;
     ctx.fillRect(0, 0, 1200, 840);
 
-    // marco
+    // textura sutil, da sensación de profundidad
+    ctx.strokeStyle = "rgba(255,255,255,0.02)";
+    ctx.lineWidth = 1;
+    for (let y = 0; y < 840; y += 4) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(1200, y);
+      ctx.stroke();
+    }
+
     ctx.strokeStyle = "rgba(79,214,255,0.5)";
     ctx.lineWidth = 3;
     ctx.strokeRect(36, 36, 1128, 768);
@@ -812,9 +880,28 @@ function playAlerta() {
     ctx.lineWidth = 1;
     ctx.strokeRect(52, 52, 1096, 736);
 
-    // escudo simple centrado arriba
+    function corner(x, y, sx, sy) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.scale(sx, sy);
+      ctx.strokeStyle = "#4fd6ff";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(0, 26);
+      ctx.lineTo(0, 0);
+      ctx.lineTo(26, 0);
+      ctx.stroke();
+      ctx.restore();
+    }
+    corner(64, 64, 1, 1);
+    corner(1136, 64, -1, 1);
+    corner(64, 776, 1, -1);
+    corner(1136, 776, -1, -1);
+
     ctx.save();
     ctx.translate(600, 150);
+    ctx.shadowColor = "rgba(79,214,255,0.55)";
+    ctx.shadowBlur = 30;
     ctx.beginPath();
     ctx.moveTo(0, -85);
     ctx.lineTo(78, -50);
@@ -823,29 +910,44 @@ function playAlerta() {
     ctx.bezierCurveTo(-42, 118, -78, 78, -78, 22);
     ctx.lineTo(-78, -50);
     ctx.closePath();
-    ctx.fillStyle = "rgba(16,24,42,0.9)";
+    const shieldFill = ctx.createLinearGradient(-78, -85, 78, 138);
+    shieldFill.addColorStop(0, "rgba(30,44,70,0.95)");
+    shieldFill.addColorStop(1, "rgba(14,20,34,0.95)");
+    ctx.fillStyle = shieldFill;
     ctx.fill();
+    ctx.shadowBlur = 0;
     ctx.strokeStyle = "#4fd6ff";
     ctx.lineWidth = 4;
     ctx.stroke();
-    // barritas tipo ecualizador dentro del escudo
+    ctx.strokeStyle = "rgba(255,255,255,0.25)";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(-70, -60);
+    ctx.lineTo(0, -78);
+    ctx.stroke();
+
     const barHeights = [26, 46, 66, 50, 32];
     barHeights.forEach((h, i) => {
       const x = -46 + i * 23;
-      ctx.fillStyle = "#4fd6ff";
+      const barGrad = ctx.createLinearGradient(0, 40 - h, 0, 40);
+      barGrad.addColorStop(0, "#8be9ff");
+      barGrad.addColorStop(1, "#2a7fa3");
+      ctx.fillStyle = barGrad;
       ctx.fillRect(x, 40 - h, 10, h);
     });
     ctx.restore();
 
-    // textos
     ctx.textAlign = "center";
     ctx.fillStyle = "#8093b4";
     ctx.font = "600 20px 'Space Mono', monospace";
     ctx.fillText("ESCUDO SONORO — PROGRAMA DE SEGURIDAD AUDITIVA", 600, 300);
 
+    ctx.shadowColor = "rgba(79,214,255,0.35)";
+    ctx.shadowBlur = 18;
     ctx.fillStyle = "#eef3fb";
     ctx.font = "900 44px 'Orbitron', sans-serif";
     ctx.fillText("CERTIFICADO DE CAPACITACIÓN", 600, 355);
+    ctx.shadowBlur = 0;
 
     ctx.fillStyle = "#4fd6ff";
     ctx.font = "500 20px 'Space Grotesk', sans-serif";
@@ -868,14 +970,65 @@ function playAlerta() {
     ctx.font = "400 16px 'Space Mono', monospace";
     ctx.fillText(dateStr, 600, 650);
 
+    ctx.fillStyle = "rgba(238,243,251,0.85)";
+    ctx.font = "700 34px 'Dancing Script', cursive";
+    ctx.fillText(name, 340, 700);
+    ctx.strokeStyle = "rgba(128,147,180,0.5)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(230, 712);
+    ctx.lineTo(450, 712);
+    ctx.stroke();
+    ctx.font = "400 12px 'Space Mono', monospace";
+    ctx.fillStyle = "#8093b4";
+    ctx.fillText("Firma", 340, 726);
+
+    const code = `ES-${new Date().getFullYear()}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
+    ctx.fillText(`N.º de registro interno: ${code}`, 340, 742);
+
+    ctx.save();
+    ctx.translate(870, 660);
+    const sealGrad = ctx.createRadialGradient(-10, -10, 5, 0, 0, 60);
+    sealGrad.addColorStop(0, "#6ff0c4");
+    sealGrad.addColorStop(1, "#1f9a78");
+    ctx.beginPath();
+    ctx.arc(0, 0, 54, 0, Math.PI * 2);
+    ctx.fillStyle = sealGrad;
+    ctx.shadowColor = "rgba(52,224,161,0.5)";
+    ctx.shadowBlur = 22;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = "#eafff5";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(0, 0, 46, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.fillStyle = "#0e9e6f";
+    ctx.beginPath();
+    ctx.moveTo(-20, 40); ctx.lineTo(-2, 72); ctx.lineTo(-20, 62); ctx.lineTo(-38, 72); ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(20, 40); ctx.lineTo(2, 72); ctx.lineTo(20, 62); ctx.lineTo(38, 72); ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = "#0a2d20";
+    ctx.lineWidth = 6;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.beginPath();
+    ctx.moveTo(-20, 2);
+    ctx.lineTo(-4, 20);
+    ctx.lineTo(24, -18);
+    ctx.stroke();
+    ctx.restore();
+
     ctx.strokeStyle = "rgba(128,147,180,0.4)";
     ctx.beginPath();
-    ctx.moveTo(430, 700);
-    ctx.lineTo(770, 700);
+    ctx.moveTo(430, 758);
+    ctx.lineTo(770, 758);
     ctx.stroke();
     ctx.font = "400 14px 'Space Grotesk', sans-serif";
     ctx.fillStyle = "#8093b4";
-    ctx.fillText("Capacitación interna — no reemplaza controles médicos ni normativa vigente", 600, 730);
+    ctx.fillText("Capacitación interna — no reemplaza controles médicos ni normativa vigente", 600, 780);
 
     const trigger = () => {
       const link = document.createElement("a");
