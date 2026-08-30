@@ -2082,3 +2082,7 @@ p, .hero-sub, .stat-text, .tool-desc, .epp-card p, .readout-note, .cilia-note, .
   .scenario-figure-svg { animation: none; }
   .figure-gear-in { animation: none; }
 }
+
+
+.figure-cotton { fill: #f4f2ee; opacity: 0.92; filter: drop-shadow(0 0.5px 0.5px rgba(0,0,0,0.15)); }
+.figure-cotton-tuft { opacity: 0.75; }
