@@ -450,47 +450,56 @@
 
 <section class="screen" id="screen-historia" data-screen hidden>
   <p class="eyebrow">Historia interactiva</p>
-  <h2 class="screen-title">30 años en la planta: dos caminos</h2>
-  <p class="hero-sub">Mismo trabajador, mismo puesto. Elegí el camino y mirá qué pasa con sus células ciliadas con el correr de los años.</p>
+  <h2 class="screen-title">Un día en la vida de Tino</h2>
+  <p class="hero-sub">Acompañalo en distintos momentos de su semana. En cada escena, vos elegís qué protección se pone.</p>
 
-  <div class="view-toggle" id="storyPathToggle">
-    <button type="button" class="view-toggle-btn active" data-path="sin">Sin protección</button>
-    <button type="button" class="view-toggle-btn" data-path="con">Con protección</button>
-  </div>
-
-  <div class="story-stage">
-    <svg class="story-figure" viewBox="0 0 160 210" aria-hidden="true">
-      <rect x="112" y="60" width="34" height="52" rx="4" class="story-machine"/>
-      <line x1="112" y1="70" x2="96" y2="72" class="story-line"/>
-      <line x1="112" y1="98" x2="96" y2="94" class="story-line"/>
-      <circle cx="60" cy="34" r="17" class="story-line"/>
-      <line x1="60" y1="51" x2="60" y2="128" class="story-line"/>
-      <line x1="60" y1="66" x2="34" y2="96" class="story-line"/>
-      <line x1="60" y1="66" x2="96" y2="80" class="story-line"/>
-      <line x1="60" y1="128" x2="38" y2="200" class="story-line"/>
-      <line x1="60" y1="128" x2="84" y2="200" class="story-line"/>
-      <circle class="story-ear-dot" cx="67" cy="30" r="3"/>
-    </svg>
-
-    <div class="story-zoom">
-      <div class="story-zoom-ring">
-        <div id="storyCiliaRow"></div>
-      </div>
-      <span class="story-zoom-label">Corte de la cóclea</span>
+  <!-- INTRO -->
+  <div class="story-phase" id="storyIntro">
+    <div class="story-intro-card">
+      <div class="story-intro-figure" id="storyIntroFigure"></div>
+      <p class="story-intro-text">Tino trabaja en la planta, pero también maneja, descansa y hace changas en su casa — como cualquiera. En cada escena vas a decidir qué protección auditiva ponerse (o si hace falta alguna). Elegí bien y su oído va a llegar sano a la jubilación. Elegí mal, y el daño se va a notar al final.</p>
     </div>
+    <button type="button" class="cta-btn" id="storyStartBtn">Empezar la historia</button>
   </div>
 
-  <div class="story-steps" id="storySteps">
-    <button type="button" class="story-step-btn active" data-step="0">Día 1</button>
-    <button type="button" class="story-step-btn" data-step="1">Año 5</button>
-    <button type="button" class="story-step-btn" data-step="2">Año 10</button>
-    <button type="button" class="story-step-btn" data-step="3">Año 20</button>
-    <button type="button" class="story-step-btn" data-step="4">Año 30</button>
+  <!-- ESCENA -->
+  <div class="story-phase" id="storyPlay" hidden>
+    <div class="story-progress" id="storyProgress"></div>
+
+    <div class="story-scene" id="storyScene">
+      <div class="story-glow" id="storyGlow"></div>
+      <div class="story-bg" id="storyBg"></div>
+      <div class="story-character" id="storyCharacter"></div>
+    </div>
+
+    <div class="story-window">
+      <div class="story-window-top">
+        <span class="story-tag" id="storyTagDb">— dB</span>
+        <span class="story-tag" id="storyTagTime">—</span>
+        <button type="button" class="story-voice-btn" id="storyVoiceBtn" aria-label="Escuchar narración">🔊</button>
+      </div>
+      <p class="story-window-text" id="storyNarrative">…</p>
+      <p class="story-feedback" id="storyFeedback" hidden></p>
+    </div>
+
+    <div class="story-choices" id="storyChoices">
+      <button type="button" class="story-choice-btn" data-choice="ninguna">Nada</button>
+      <button type="button" class="story-choice-btn" data-choice="espuma">Tapones espuma</button>
+      <button type="button" class="story-choice-btn" data-choice="moldeado">Tapones moldeados</button>
+      <button type="button" class="story-choice-btn" data-choice="orejeras">Orejeras</button>
+      <button type="button" class="story-choice-btn" data-choice="doble">Doble protección</button>
+    </div>
+
+    <button type="button" class="cta-btn story-next-btn" id="storyNextBtn" hidden>Siguiente escena</button>
   </div>
 
-  <div class="story-card">
-    <span class="story-damage" id="storyDamage">0% de células dañadas</span>
-    <p class="story-text" id="storyText">Primer día en la línea de producción.</p>
+  <!-- FINAL -->
+  <div class="story-phase" id="storyEnd" hidden>
+    <div class="story-end-figure" id="storyEndFigure"></div>
+    <p class="story-end-headline" id="storyEndHeadline">—</p>
+    <p class="story-end-text" id="storyEndText">—</p>
+    <div class="story-recap" id="storyRecap"></div>
+    <button type="button" class="cta-btn" id="storyReplayBtn">Jugar de nuevo</button>
   </div>
 </section>
 
