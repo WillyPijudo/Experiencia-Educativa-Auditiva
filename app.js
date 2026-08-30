@@ -98,6 +98,7 @@ function playAlerta() {
       if (id === "oido" && is3D) window.ear3D.resume();
       else window.ear3D.pause();
     }
+    if (id !== "cortos" && window.stopCortos) window.stopCortos();
   }
 
   function openMenu() { menu.hidden = false; }
@@ -1436,4 +1437,193 @@ function playAlerta() {
   });
 
   render();
+})();
+
+// ---- Cortometrajes: reproductor + relato narrado con IA + subtítulos ----
+(function cortos() {
+  const clipTabs = document.querySelectorAll(".clip-tab");
+  const video = document.getElementById("storyVideo");
+  const videoSource = document.getElementById("storyVideoSource");
+  const playBtn = document.getElementById("videoPlayBtn");
+  const muteBtn = document.getElementById("videoMuteBtn");
+  const progressFill = document.getElementById("videoProgressFill");
+  const jumpCta = document.getElementById("videoJumpCta");
+  const jumpBtn = document.getElementById("videoJumpBtn");
+  const narrateBtn = document.getElementById("narrateBtn");
+  const subPages = { 1: document.getElementById("subPage1"), 2: document.getElementById("subPage2") };
+  const subWordsEl = { 1: document.getElementById("subWords1"), 2: document.getElementById("subWords2") };
+  const narrAudio = { 1: document.getElementById("narrationAudio1"), 2: document.getElementById("narrationAudio2") };
+  if (!video) return;
+
+  const VIDEO_SRC = { 1: "video/videoedu1.mp4", 2: "video/videoedu2.mp4" };
+
+  // [segundo de inicio, palabra] — extraído de las narraciones de la IA
+  const WORDS = {
+    1: [
+      [0.2, "Lo"], [0.3, "que"], [0.42, "viste"], [0.68, "en"], [0.76, "los"], [0.92, "2"],
+      [1.08, "cortometrajes"], [1.8, "breves"], [2.46, "muestra"], [2.76, "lo"], [2.86, "que"],
+      [3.0, "puede"], [3.24, "llegar"], [3.5, "a"], [3.6, "pasar"], [3.84, "a"], [3.92, "lo"],
+      [4.02, "largo"], [4.28, "de"], [4.38, "los"], [4.58, "años"], [4.8, "trabajando"], [5.48, "y"],
+      [5.58, "siguiendo"], [6.0, "tu"], [6.1, "vida"], [6.34, "diaria"], [6.88, "sin"], [7.02, "tener"],
+      [7.26, "en"], [7.4, "cuenta"], [7.68, "la"], [7.8, "protección"], [8.26, "de"], [8.4, "tus"],
+      [8.62, "oídos,"], [9.2, "provocando"], [9.66, "una"], [9.86, "serie"], [10.1, "de"],
+      [10.28, "daños"], [10.66, "irreversibles"], [11.3, "en"], [11.42, "las"], [11.58, "células"],
+      [12.02, "ciliadas,"], [12.88, "mostrando"], [13.32, "cómo"], [13.5, "esa"], [13.7, "persona"],
+      [14.06, "le"], [14.14, "da"], [14.36, "tinnitus,"], [14.98, "haciendo"], [15.36, "que"],
+      [15.48, "no"], [15.64, "pueda"], [15.9, "seguir"], [16.2, "su"], [16.34, "vida"], [16.58, "de"],
+      [16.7, "manera"], [17.06, "normal."],
+    ],
+    2: [
+      [0.16, "En"], [0.3, "cambio,"], [0.68, "el"], [0.96, "2do"], [1.18, "video"], [1.52, "muestra"],
+      [1.86, "cómo"], [2.02, "es"], [2.14, "que"], [2.24, "la"], [2.36, "persona"], [2.72, "trabaja"],
+      [3.16, "y"], [3.26, "vive"], [3.52, "con"], [3.64, "normalidad"], [4.28, "al"], [4.4, "no"],
+      [4.52, "tener"], [4.8, "ningún"], [5.14, "dolor"], [5.4, "o"], [5.5, "molestia"], [5.92, "en"],
+      [6.02, "el"], [6.16, "oído,"], [6.5, "teniendo"], [6.8, "en"], [6.92, "cuenta"], [7.18, "las"],
+      [7.34, "precauciones"], [7.94, "que"], [8.02, "hay"], [8.16, "que"], [8.3, "tomar"], [8.74, "y"],
+      [8.82, "generando"], [9.36, "menos"], [9.68, "estrés"], [10.06, "en"], [10.18, "su"],
+      [10.3, "vida"], [10.58, "diaria."], [11.22, "Todo"], [11.46, "esto"], [11.7, "con"], [11.82, "el"],
+      [11.94, "objetivo"], [12.36, "de"], [12.42, "intentar"], [12.84, "convencerte"], [13.46, "que"],
+      [13.54, "al"], [13.64, "menos"], [13.92, "intentes"], [14.36, "tener"], [14.6, "en"],
+      [14.72, "cuenta"], [15.0, "de"], [15.12, "conseguir"], [15.54, "algo"], [15.74, "de"],
+      [15.86, "protección"], [16.38, "para"], [16.58, "tus"], [16.78, "oídos"], [17.22, "y"],
+      [17.3, "no"], [17.42, "tener"], [17.68, "que"], [17.8, "preocuparte"], [18.4, "más"],
+      [18.62, "sobre"], [18.88, "problemas"], [19.34, "permanentes"], [20.1, "en"], [20.26, "tu"],
+      [20.38, "futuro."],
+    ],
+  };
+
+  const KEY_WORDS = new Set([
+    "celulas", "ciliadas", "tinnitus", "irreversibles", "danos", "dano",
+    "proteccion", "precauciones", "estres", "permanentes",
+  ]);
+
+  function normalize(w) {
+    return w.toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]/g, "");
+  }
+
+  function buildWords(clip) {
+    const container = subWordsEl[clip];
+    container.innerHTML = "";
+    WORDS[clip].forEach(([start, text]) => {
+      const span = document.createElement("span");
+      span.className = "sub-word";
+      if (KEY_WORDS.has(normalize(text))) span.classList.add("sub-key");
+      span.dataset.start = start;
+      span.textContent = text;
+      container.appendChild(span);
+      container.appendChild(document.createTextNode(" "));
+    });
+  }
+  buildWords(1);
+  buildWords(2);
+
+  function resetWords(clip) {
+    subWordsEl[clip].querySelectorAll(".sub-word").forEach((s) => {
+      s.classList.remove("sub-shown", "sub-active");
+    });
+  }
+
+  let currentClip = 1;
+
+  function stopAll() {
+    video.pause();
+    narrAudio[1].pause();
+    narrAudio[2].pause();
+    playBtn.classList.remove("is-playing");
+    narrateBtn.textContent = "▶ Relatar este video con IA";
+  }
+  window.stopCortos = stopAll;
+
+  function switchClip(n) {
+    stopAll();
+    currentClip = n;
+    clipTabs.forEach((b) => b.classList.toggle("active", Number(b.dataset.clip) === n));
+    subPages[1].classList.toggle("active", n === 1);
+    subPages[2].classList.toggle("active", n === 2);
+    resetWords(1);
+    resetWords(2);
+    videoSource.src = VIDEO_SRC[n];
+    video.load();
+    progressFill.style.width = "0%";
+    jumpCta.hidden = true;
+  }
+
+  clipTabs.forEach((btn) => {
+    btn.addEventListener("click", () => switchClip(Number(btn.dataset.clip)));
+  });
+
+  function togglePlay() {
+    if (video.paused) {
+      narrAudio[1].pause();
+      narrAudio[2].pause();
+      narrateBtn.textContent = "▶ Relatar este video con IA";
+      video.play().catch(() => {});
+    } else {
+      video.pause();
+    }
+  }
+  playBtn.addEventListener("click", togglePlay);
+  video.addEventListener("click", togglePlay);
+  video.addEventListener("play", () => playBtn.classList.add("is-playing"));
+  video.addEventListener("pause", () => playBtn.classList.remove("is-playing"));
+  video.addEventListener("timeupdate", () => {
+    if (video.duration) progressFill.style.width = `${(video.currentTime / video.duration) * 100}%`;
+  });
+  video.addEventListener("ended", () => {
+    playBtn.classList.remove("is-playing");
+    if (currentClip === 1) jumpCta.hidden = false;
+  });
+
+  muteBtn.addEventListener("click", () => {
+    video.muted = !video.muted;
+    muteBtn.textContent = video.muted ? "🔇" : "🔊";
+  });
+
+  jumpBtn.addEventListener("click", () => {
+    switchClip(2);
+    video.play().catch(() => {});
+  });
+
+  narrateBtn.addEventListener("click", () => {
+    const audio = narrAudio[currentClip];
+    if (!audio.paused) {
+      audio.pause();
+      narrateBtn.textContent = "▶ Relatar este video con IA";
+      return;
+    }
+    video.pause();
+    resetWords(currentClip);
+    narrateBtn.textContent = "⏸ Relatando…";
+    audio.currentTime = 0;
+    audio.play().catch(() => {
+      narrateBtn.textContent = "▶ Relatar este video con IA";
+    });
+  });
+
+  [1, 2].forEach((clip) => {
+    const audio = narrAudio[clip];
+    audio.addEventListener("timeupdate", () => {
+      const spans = subWordsEl[clip].querySelectorAll(".sub-word");
+      let activeSpan = null;
+      spans.forEach((span) => {
+        const start = Number(span.dataset.start);
+        if (start <= audio.currentTime) {
+          span.classList.add("sub-shown");
+          activeSpan = span;
+        } else {
+          span.classList.remove("sub-shown");
+        }
+        span.classList.remove("sub-active");
+      });
+      if (activeSpan) activeSpan.classList.add("sub-active");
+    });
+    audio.addEventListener("ended", () => {
+      if (currentClip === clip) narrateBtn.textContent = "▶ Relatar este video con IA";
+      subWordsEl[clip].querySelectorAll(".sub-word").forEach((s) => s.classList.remove("sub-active"));
+    });
+  });
+
+  switchClip(1);
 })();

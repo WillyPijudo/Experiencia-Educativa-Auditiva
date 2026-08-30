@@ -57,6 +57,7 @@
       </div>
 
       <button class="cta-btn" data-goto="simulador">Probar el simulador</button>
+      <button class="cta-btn quiz-retry-btn" data-goto="cortos" style="margin-top:10px;">Ver los cortometrajes 🎬</button>
     </section>
 
     <!-- SIMULADOR -->
@@ -502,6 +503,57 @@
   </div>
 </section>
 
+<!-- CORTOMETRAJES: reproductor + relato narrado + subtítulos -->
+<section class="screen" id="screen-cortos" data-screen hidden>
+  <p class="eyebrow">Cortometrajes</p>
+  <h2 class="screen-title">Mismo trabajo, dos finales</h2>
+  <p class="hero-sub">Dos historias cortas grabadas para esta capacitación. Mirá cada una y escuchá el relato para entender qué está en juego.</p>
+
+  <div class="clip-tabs" id="clipTabs">
+    <button type="button" class="clip-tab active" data-clip="1">
+      <span class="clip-tab-num">1</span>
+      <span class="clip-tab-text">Sin protección<small>10s</small></span>
+    </button>
+    <button type="button" class="clip-tab" data-clip="2">
+      <span class="clip-tab-num">2</span>
+      <span class="clip-tab-text">Con protección<small>8s</small></span>
+    </button>
+  </div>
+
+  <div class="video-stage" id="videoStage">
+    <video id="storyVideo" class="story-video" playsinline preload="metadata" poster="">
+      <source id="storyVideoSource" src="video/videoedu1.mp4" type="video/mp4">
+    </video>
+
+    <button type="button" class="video-play-btn" id="videoPlayBtn" aria-label="Reproducir">
+      <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M17 12 L36 24 L17 36 Z"/></svg>
+    </button>
+
+    <button type="button" class="video-mute-btn" id="videoMuteBtn" aria-label="Silenciar">🔊</button>
+
+    <div class="video-progress"><span class="video-progress-fill" id="videoProgressFill"></span></div>
+
+    <div class="video-jump-cta" id="videoJumpCta" hidden>
+      <span>¿Y si sí te cuidás?</span>
+      <button type="button" id="videoJumpBtn">Ver el video 2 →</button>
+    </div>
+  </div>
+
+  <button type="button" class="cta-btn narrate-btn" id="narrateBtn">▶ Relatar este video con IA</button>
+
+  <div class="sub-page active" id="subPage1">
+    <p class="sub-page-label">Relato — Video 1 · Sin protección</p>
+    <p class="sub-page-words" id="subWords1"></p>
+  </div>
+  <div class="sub-page" id="subPage2">
+    <p class="sub-page-label">Relato — Video 2 · Con protección</p>
+    <p class="sub-page-words" id="subWords2"></p>
+  </div>
+
+  <audio id="narrationAudio1" src="audio/narracion-clip1.mp3" preload="none"></audio>
+  <audio id="narrationAudio2" src="audio/narracion-clip2.mp3" preload="none"></audio>
+</section>
+
 </main>
     
 
@@ -551,7 +603,7 @@
           <li><button type="button" data-goto="herramientas">Herramientas<span class="tag tag-new">Nuevo</span></button></li>
           <li><button type="button" data-goto="empresa">Por qué importa<span class="tag tag-new">Nuevo</span></button></li>
           <li><button type="button" data-goto="historia">Historia interactiva<span class="tag tag-new">Nuevo</span></button></li>
-          <li><button type="button" class="menu-soon" disabled>Más próximamente<span class="tag">Próx.</span></button></li>
+          <li><button type="button" data-goto="cortos">Cortometrajes<span class="tag tag-new">Nuevo</span></button></li>
         </ul>
       </div>
     </div>
