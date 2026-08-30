@@ -541,6 +541,15 @@ function playAlerta() {
         <path d="M6 15 C10 13 12 16 11 21 C10 25 6 24 5.5 20 Z" class="figure-plug-molded"/>
         <path d="M54 15 C50 13 48 16 49 21 C50 25 54 24 54.5 20 Z" class="figure-plug-molded"/>`;
     }
+    if (protection === "cotton") {
+      gear += `
+        <circle cx="8.5" cy="19" r="4" class="figure-cotton"/>
+        <circle cx="6.5" cy="17" r="2.2" class="figure-cotton figure-cotton-tuft"/>
+        <circle cx="10" cy="16.5" r="2" class="figure-cotton figure-cotton-tuft"/>
+        <circle cx="51.5" cy="19" r="4" class="figure-cotton"/>
+        <circle cx="53.5" cy="17" r="2.2" class="figure-cotton figure-cotton-tuft"/>
+        <circle cx="50" cy="16.5" r="2" class="figure-cotton figure-cotton-tuft"/>`;
+    }
 
     return `<svg viewBox="0 0 60 100" class="scenario-figure-svg" style="color:${color};" aria-hidden="true">
       ${BODY}${BODY_SHADE}${BODY_SHINE}
@@ -639,7 +648,7 @@ function playAlerta() {
       people: [
         { label: "Tapones de espuma certificados", correct: true, role: "casa", protectionType: "foam" },
         { label: "Orejeras de copa certificadas", correct: true, role: "casa", protectionType: "earmuff" },
-        { label: "Algodón en el oído", correct: false, role: "casa" },
+        { label: "Algodón en el oído", correct: false, role: "casa", protectionType: "cotton" },
         { label: "Auriculares comunes de música", correct: false, role: "casa" },
       ],
       explain: "Solo los tapones y las orejeras certificadas atenúan de forma real. El algodón casi no reduce decibeles, y los auriculares de música no están diseñados para atenuar ruido ambiente." 
