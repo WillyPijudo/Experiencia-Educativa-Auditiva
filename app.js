@@ -604,7 +604,17 @@ function playAlerta() {
         { label: "12 años en la línea, protección \"cuando se acuerda\"", years: 12, damage: 60 },
         { label: "25 años en la línea, sin protección desde siempre", years: 25, damage: 88 },
       ], correct: 2, explain: "25 años de exposición sin protección constante es el escenario de mayor daño acumulado — y es exactamente el tipo de antigüedad que puede tener un operario en una planta industrial. Por eso la protección tiene que ser un hábito desde el primer día, no algo que se adopta después." },
-      ], explain: "Solo los tapones y las orejeras certificadas atenúan de forma real. El algodón casi no reduce decibeles, y los auriculares de música no están diseñados para atenuar ruido ambiente." },
+    { 
+      type: "multiselect", 
+      q: "¿Cuáles de estos elementos brindan una protección auditiva real y efectiva? (Seleccioná todas las que correspondan)",
+      people: [
+        { label: "Tapones de espuma certificados", correct: true, role: "obrero" },
+        { label: "Orejeras de copa certificadas", correct: true, role: "obrero" },
+        { label: "Algodón en el oído", correct: false, role: "casa" },
+        { label: "Auriculares comunes de música", correct: false, role: "casa" },
+      ], 
+      explain: "Solo los tapones y las orejeras certificadas atenúan de forma real. El algodón casi no reduce decibeles, y los auriculares de música no están diseñados para atenuar ruido ambiente." 
+    },
 
     { type: "order", q: "Ordená estos elementos de protección de MENOR a MAYOR atenuación real (tocalos en orden).",
       items: [
