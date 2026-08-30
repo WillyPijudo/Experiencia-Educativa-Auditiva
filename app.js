@@ -249,9 +249,8 @@ function playAlerta() {
     plugMoldedEl.classList.toggle("active", showMolded);
   }
 
-   const quickRiskDot = document.getElementById("quickRiskDot");
+  const quickRiskDot = document.getElementById("quickRiskDot");
   const quickRiskLabel = document.getElementById("quickRiskLabel");
-  const quickSafeTime = document.getElementById("quickSafeTime");
   const safeTimeFill = document.getElementById("safeTimeFill");
 
   function updateRefActive(rawDb) {
@@ -280,9 +279,9 @@ function playAlerta() {
       quickRiskLabel.style.color = risk.color;
       quickRiskDot.style.background = risk.color;
       quickRiskDot.style.boxShadow = `0 0 8px 1px ${risk.color}`;
-      quickSafeTime.textContent = formatTime(minutes);
-      quickSafeTime.style.color = risk.color;
     }
+    safeTimeEl.style.color = risk.color;
+    effectiveDbEl.style.color = risk.color;
     if (safeTimeFill) {
       const clampedMinutes = isFinite(minutes) ? minutes : 480;
       const pct = Math.max(3, Math.min(100, (Math.log(clampedMinutes + 1) / Math.log(481)) * 100));
