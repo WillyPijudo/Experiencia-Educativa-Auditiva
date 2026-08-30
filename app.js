@@ -558,6 +558,7 @@ function playAlerta() {
       <g class="figure-gear-in">${gear}</g>
     </svg>`;
   }
+  window.personFigureSvg = personFigureSvg;
 
   
   // ---- Banco de preguntas (se arma un test nuevo y random cada vez) ----
@@ -1522,70 +1523,281 @@ function playAlerta() {
 
 // ---- Historia interactiva: dos caminos a 30 años ----
 (function storySection() {
-  const pathButtons = document.querySelectorAll("#storyPathToggle .view-toggle-btn");
-  const stepButtons = document.querySelectorAll(".story-step-btn");
-  const damageEl = document.getElementById("storyDamage");
-  const textEl = document.getElementById("storyText");
-  const ciliaRow = document.getElementById("storyCiliaRow");
-  if (!pathButtons.length || !ciliaRow) return;
+  const introEl = document.getElementById("storyIntro");
+  const playEl = document.getElementById("storyPlay");
+  const endEl = document.getElementById("storyEnd");
+  if (!introEl || !playEl || !endEl) return;
 
-  const STORY = {
-    sin: [
-      { damage: 0, text: "Primer día en la línea de extrusión. El oído está intacto. Nadie le entregó protección auditiva todavía — \"ya te la dan después\", le dijeron." },
-      { damage: 17, text: "Empieza a subir el volumen de la tele más de lo normal en su casa. Piensa que es la tele la que está fallando." },
-      { damage: 38, text: "En las reuniones de turno le cuesta seguir cuando hablan varios a la vez. Lo atribuye al cansancio, no al oído." },
-      { damage: 67, text: "Le diagnostican hipoacusia inducida por ruido. Ya es irreversible: perdió sobre todo la capacidad de distinguir sonidos agudos." },
-      { damage: 92, text: "Depende de audífonos para seguir una conversación normal. El daño se instaló de a poco, sin un momento dramático — por eso nunca lo vio venir." },
-    ],
-    con: [
-      { damage: 0, text: "Primer día en la línea de extrusión. Le entregan protectores auditivos y le muestran cómo colocarlos bien desde la inducción." },
-      { damage: 2, text: "Usa la protección todos los días, sin excepción. Su audición sigue prácticamente intacta." },
-      { damage: 4, text: "Una exposición puntual sin protección (un imprevisto en planta, una changa el fin de semana) dejó un daño mínimo, pero controlado." },
-      { damage: 6, text: "Sigue escuchando bien. El hábito de protegerse se volvió automático, como ponerse el cinturón de seguridad." },
-      { damage: 9, text: "Se jubila con una audición muy cercana a la normal para su edad. La diferencia con el otro camino no fue la suerte: fue una costumbre diaria." },
-    ],
-  };
+  const startBtn = document.getElementById("storyStartBtn");
+  const introFigure = document.getElementById("storyIntroFigure");
+  const progressEl = document.getElementById("storyProgress");
+  const bgEl = document.getElementById("storyBg");
+  const glowEl = document.getElementById("storyGlow");
+  const charEl = document.getElementById("storyCharacter");
+  const tagDb = document.getElementById("storyTagDb");
+  const tagTime = document.getElementById("storyTagTime");
+  const voiceBtn = document.getElementById("storyVoiceBtn");
+  const narrativeEl = document.getElementById("storyNarrative");
+  const feedbackEl = document.getElementById("storyFeedback");
+  const choicesEl = document.getElementById("storyChoices");
+  const nextBtn = document.getElementById("storyNextBtn");
+  const endFigure = document.getElementById("storyEndFigure");
+  const headlineEl = document.getElementById("storyEndHeadline");
+  const endTextEl = document.getElementById("storyEndText");
+  const recapEl = document.getElementById("storyRecap");
+  const replayBtn = document.getElementById("storyReplayBtn");
 
-  const HAIR_COUNT = 14;
-  for (let i = 0; i < HAIR_COUNT; i++) {
-    const hair = document.createElement("span");
-    hair.className = "story-hair";
-    hair.style.animationDelay = `${(i * 0.1).toFixed(2)}s`;
-    ciliaRow.appendChild(hair);
+  const ATTEN = { ninguna: 0, orejeras: 22, espuma: 25, moldeado: 28, doble: 32 };
+  const CHOICE_LABEL = { ninguna: "Nada", orejeras: "Orejeras", espuma: "Tapones de espuma", moldeado: "Tapones moldeados", doble: "Doble protección" };
+  const ROUNDS = 4;
+
+  const POOL = [
+    { role: "obrero", db: 105, timeLabel: "turno de 8 horas", minAtten: 22,
+      narrative: "Arranca el turno en la línea de extrusión: la máquina no para en toda la jornada.",
+      tip: "105 dB durante 8 horas sin protección real puede dañar el oído. Con orejeras, tapones o doble protección, el nivel efectivo baja a una zona segura." },
+    { role: "obrero", db: 115, timeLabel: "15 minutos", minAtten: 25,
+      narrative: "Un compañero le pide una mano con la amoladora, apenas 15 minutos.",
+      tip: "115 dB es muy alto incluso para una exposición corta: no alcanza con lo mínimo, hace falta una atenuación buena." },
+    { role: "oficina", db: 55, timeLabel: "jornada completa", minAtten: 0,
+      narrative: "En la oficina, el ruido de fondo es apenas el de las impresoras y el aire acondicionado.",
+      tip: "55 dB está muy por debajo del umbral de riesgo (85 dB): acá no hace falta protección auditiva." },
+    { role: "casa", db: 95, timeLabel: "25 minutos", minAtten: 22,
+      narrative: "El sábado le toca cortar el pasto con la bordeadora.",
+      tip: "95 dB puede dañar el oído incluso en ratos cortos si se repite semana a semana. Un tapón simple ya alcanza." },
+    { role: "transito", db: 88, timeLabel: "40 minutos de viaje", minAtten: 0,
+      narrative: "Vuelve manejando en medio del tránsito pesado, con bocinazos de fondo.",
+      tip: "Adentro del auto, 88 dB por 40 minutos no es un riesgo real — y taparse los oídos manejando sería directamente peligroso." },
+    { role: "obrero", db: 118, timeLabel: "turno de 8 horas", minAtten: 32,
+      narrative: "Le toca cubrir la sala de compresores, el punto más ruidoso de toda la planta.",
+      tip: "118 dB durante 8 horas es un escenario límite: acá la única opción segura es la protección doble." },
+    { role: "casa", db: 100, timeLabel: "10 minutos", minAtten: 22,
+      narrative: "Un sábado usa el taladro en casa para colgar un cuadro.",
+      tip: "Aunque sea un ratito, 100 dB de cerca justifica ponerse algo — el hábito vale también fuera del trabajo." },
+  ];
+
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
   }
-  const hairs = ciliaRow.querySelectorAll(".story-hair");
 
-  let path = "sin";
-  let stepIndex = 0;
-
-  function render() {
-    const data = STORY[path][stepIndex];
-    damageEl.textContent = `${data.damage}% de células dañadas`;
-    damageEl.style.color = data.damage === 0 ? "var(--mint)" : data.damage < 30 ? "var(--hologram)" : "var(--signal)";
-    textEl.textContent = data.text;
-    const damagedCount = Math.round((data.damage / 100) * HAIR_COUNT);
-    hairs.forEach((h, i) => h.classList.toggle("story-hair-dead", i < damagedCount));
+  function riskColorForDb(db) {
+    if (db <= 85) return "var(--mint)";
+    if (db <= 105) return "var(--hologram)";
+    return "var(--signal)";
   }
 
-  pathButtons.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      pathButtons.forEach((b) => b.classList.remove("active"));
-      btn.classList.add("active");
-      path = btn.dataset.path;
-      render();
+  function sceneBackgroundSvg(role) {
+    if (role === "obrero") {
+      return `<svg viewBox="0 0 300 170" class="story-bg-svg" aria-hidden="true">
+        <rect x="0" y="118" width="300" height="52" class="bg-floor"/>
+        <rect x="0" y="112" width="300" height="7" class="bg-hazard"/>
+        <rect x="188" y="36" width="82" height="92" rx="6" class="bg-machine"/>
+        <rect x="200" y="52" width="58" height="9" rx="2" class="bg-machine-vent"/>
+        <rect x="200" y="68" width="58" height="9" rx="2" class="bg-machine-vent"/>
+        <rect x="200" y="84" width="58" height="9" rx="2" class="bg-machine-vent"/>
+        <circle cx="36" cy="150" r="15" class="bg-tire"/><circle cx="36" cy="150" r="6" class="bg-tire-hub"/>
+        <circle cx="80" cy="152" r="12" class="bg-tire"/><circle cx="80" cy="152" r="5" class="bg-tire-hub"/>
+      </svg>`;
+    }
+    if (role === "oficina") {
+      return `<svg viewBox="0 0 300 170" class="story-bg-svg" aria-hidden="true">
+        <rect x="0" y="132" width="300" height="38" class="bg-floor-office"/>
+        <rect x="35" y="18" width="55" height="72" rx="4" class="bg-window"/>
+        <line x1="35" y1="34" x2="90" y2="34" class="bg-window-line"/>
+        <line x1="35" y1="50" x2="90" y2="50" class="bg-window-line"/>
+        <line x1="35" y1="66" x2="90" y2="66" class="bg-window-line"/>
+        <rect x="180" y="62" width="90" height="66" rx="4" class="bg-desk"/>
+        <rect x="196" y="26" width="56" height="38" rx="3" class="bg-monitor"/>
+        <rect x="216" y="64" width="16" height="10" class="bg-monitor-stand"/>
+      </svg>`;
+    }
+    if (role === "transito") {
+      return `<svg viewBox="0 0 300 170" class="story-bg-svg" aria-hidden="true">
+        <rect x="0" y="20" width="90" height="100" class="bg-building"/>
+        <rect x="215" y="0" width="85" height="120" class="bg-building bg-building-b"/>
+        <rect x="0" y="120" width="300" height="50" class="bg-road"/>
+        <line x1="0" y1="145" x2="300" y2="145" class="bg-road-line"/>
+        <g class="bg-car">
+          <rect x="128" y="118" width="78" height="22" rx="7" class="bg-car-body"/>
+          <path d="M144 118 L156 96 L188 96 L200 118 Z" class="bg-car-cabin"/>
+          <circle cx="150" cy="142" r="9" class="bg-car-wheel"/>
+          <circle cx="188" cy="142" r="9" class="bg-car-wheel"/>
+        </g>
+      </svg>`;
+    }
+    return `<svg viewBox="0 0 300 170" class="story-bg-svg" aria-hidden="true">
+      <rect x="0" y="140" width="300" height="30" class="bg-floor-home"/>
+      <rect x="18" y="66" width="78" height="58" rx="8" class="bg-couch"/>
+      <rect x="8" y="56" width="20" height="70" rx="7" class="bg-couch-arm"/>
+      <rect x="96" y="56" width="20" height="70" rx="7" class="bg-couch-arm"/>
+      <rect x="195" y="38" width="66" height="48" rx="3" class="bg-tv"/>
+      <rect x="219" y="86" width="18" height="8" class="bg-tv-stand"/>
+    </svg>`;
+  }
+
+  let rounds = [];
+  let roundIndex = 0;
+  let totalDamage = 0;
+  let answeredThisRound = false;
+  let voiceUtterance = null;
+
+  function speak(text) {
+    if (!("speechSynthesis" in window)) return;
+    window.speechSynthesis.cancel();
+    voiceUtterance = new SpeechSynthesisUtterance(text);
+    voiceUtterance.lang = "es-ES";
+    voiceUtterance.rate = 1;
+    window.speechSynthesis.speak(voiceUtterance);
+  }
+
+  function buildProgress() {
+    progressEl.innerHTML = "";
+    rounds.forEach((_, i) => {
+      const dot = document.createElement("span");
+      dot.className = "story-progress-dot";
+      progressEl.appendChild(dot);
     });
+  }
+
+  function updateProgress() {
+    [...progressEl.children].forEach((dot, i) => {
+      dot.classList.toggle("done", i < roundIndex);
+      dot.classList.toggle("current", i === roundIndex);
+    });
+  }
+
+  function renderRound() {
+    answeredThisRound = false;
+    const round = rounds[roundIndex];
+    const color = riskColorForDb(round.db);
+
+    bgEl.innerHTML = sceneBackgroundSvg(round.role);
+    charEl.innerHTML = personFigureSvg(round.role === "transito" ? "casa" : round.role, "none", "var(--paper)");
+    glowEl.style.setProperty("--scene-color", color);
+
+    tagDb.textContent = `${round.db} dB`;
+    tagDb.style.color = color;
+    tagTime.textContent = round.timeLabel;
+    narrativeEl.textContent = round.narrative;
+    feedbackEl.hidden = true;
+    feedbackEl.className = "story-feedback";
+    nextBtn.hidden = true;
+
+    [...choicesEl.children].forEach((btn) => {
+      btn.disabled = false;
+      btn.classList.remove("story-correct", "story-wrong", "story-chosen");
+    });
+
+    updateProgress();
+    window.speechSynthesis && window.speechSynthesis.cancel();
+  }
+
+  function answerRound(choice) {
+    if (answeredThisRound) return;
+    answeredThisRound = true;
+    const round = rounds[roundIndex];
+    const atten = ATTEN[choice];
+
+    let result;
+    if (round.minAtten === 0) {
+      result = choice === "ninguna" ? "correct" : "neutral";
+    } else {
+      result = atten >= round.minAtten ? "correct" : "wrong";
+    }
+    if (result === "wrong") totalDamage += 25;
+
+    charEl.innerHTML = personFigureSvg(round.role === "transito" ? "casa" : round.role, choice, "var(--paper)");
+
+    [...choicesEl.children].forEach((btn) => {
+      btn.disabled = true;
+      if (btn.dataset.choice === choice) btn.classList.add("story-chosen");
+      if (result === "wrong" && btn.dataset.choice === choice) btn.classList.add("story-wrong");
+      if (result !== "wrong" && btn.dataset.choice === choice) btn.classList.add("story-correct");
+    });
+
+    feedbackEl.hidden = false;
+    feedbackEl.classList.add(result === "wrong" ? "story-feedback-wrong" : result === "neutral" ? "story-feedback-neutral" : "story-feedback-correct");
+    feedbackEl.textContent = round.tip;
+
+    round.chosen = choice;
+    round.result = result;
+
+    nextBtn.hidden = false;
+    nextBtn.textContent = roundIndex < rounds.length - 1 ? "Siguiente escena" : "Ver el final";
+  }
+
+  function renderEnd() {
+    playEl.hidden = true;
+    endEl.hidden = false;
+
+    let headline, text, figColor, figProtection;
+    if (totalDamage === 0) {
+      headline = "Oído sano, decisión por decisión.";
+      text = "Tino terminó la semana sin sumar ningún riesgo auditivo. Así se cuida el oído de verdad: no con un gesto heroico, sino con la protección correcta en cada momento.";
+      figColor = "var(--mint)"; figProtection = "doble";
+    } else if (totalDamage <= 25) {
+      headline = "Casi perfecto — un descuido cuenta.";
+      text = "Estuvo bien casi todo el tiempo, pero un solo momento de menos protección también suma. El daño auditivo no avisa: por eso el hábito tiene que ser todas las veces, no casi todas.";
+      figColor = "var(--hologram)"; figProtection = "orejeras";
+    } else if (totalDamage <= 50) {
+      headline = "Un par de veces se la jugó de más.";
+      text = "El daño auditivo no se nota al otro día — se nota recién con los años. Las decisiones de hoy son las que definen cómo va a escuchar Tino dentro de dos décadas.";
+      figColor = "var(--signal)"; figProtection = "espuma";
+    } else {
+      headline = "Casi ninguna decisión lo protegió.";
+      text = "Si esto fuera real, en pocos años Tino ya tendría una pérdida auditiva notoria. La buena noticia: en la vida real, a diferencia del juego, siempre podés volver a elegir bien desde la próxima exposición.";
+      figColor = "var(--signal)"; figProtection = "none";
+    }
+
+    headlineEl.textContent = headline;
+    endTextEl.textContent = text;
+    endFigure.innerHTML = personFigureSvg("obrero", figProtection, figColor);
+
+    recapEl.innerHTML = "";
+    rounds.forEach((round) => {
+      const row = document.createElement("div");
+      row.className = "story-recap-item";
+      const icon = round.result === "wrong" ? "⚠" : "✓";
+      row.innerHTML = `
+        <span class="story-recap-icon ${round.result === "wrong" ? "story-recap-bad" : "story-recap-ok"}">${icon}</span>
+        <span class="story-recap-text">${round.narrative} <strong>${round.db} dB, ${round.timeLabel}</strong> — eligió: ${CHOICE_LABEL[round.chosen]}</span>`;
+      recapEl.appendChild(row);
+    });
+  }
+
+  function startGame() {
+    rounds = shuffle(POOL).slice(0, ROUNDS);
+    roundIndex = 0;
+    totalDamage = 0;
+    introEl.hidden = true;
+    endEl.hidden = true;
+    playEl.hidden = false;
+    buildProgress();
+    renderRound();
+  }
+
+  choicesEl.querySelectorAll(".story-choice-btn").forEach((btn) => {
+    btn.addEventListener("click", () => answerRound(btn.dataset.choice));
   });
 
-  stepButtons.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      stepButtons.forEach((b) => b.classList.remove("active"));
-      btn.classList.add("active");
-      stepIndex = Number(btn.dataset.step);
-      render();
-    });
+  nextBtn.addEventListener("click", () => {
+    roundIndex += 1;
+    if (roundIndex >= rounds.length) renderEnd();
+    else renderRound();
   });
 
-  render();
+  voiceBtn.addEventListener("click", () => speak(rounds[roundIndex].narrative));
+  startBtn.addEventListener("click", startGame);
+  replayBtn.addEventListener("click", () => {
+    endEl.hidden = true;
+    introEl.hidden = false;
+  });
+
+  if (introFigure) introFigure.innerHTML = personFigureSvg("obrero", "earmuff", "var(--hologram)");
 })();
 
 // ---- Cortometrajes: reproductor + relato en 2 partes + libro de subtítulos ----
