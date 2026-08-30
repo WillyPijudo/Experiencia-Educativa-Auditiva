@@ -2042,3 +2042,43 @@ p, .hero-sub, .stat-text, .tool-desc, .epp-card p, .readout-note, .cilia-note, .
   color: var(--ink); font-size: 13px; font-weight: 700;
 }
 .multiselect-confirm { margin-top: 4px; }
+
+
+
+
+/* ============ Figura vectorial v2: sombras, luces y protección auditiva real ============ */
+.scenario-figure-svg { animation: figure-float 3.4s ease-in-out infinite; }
+@keyframes figure-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2.5px); }
+}
+
+.figure-head-shadow, .figure-body-shadow { fill: #000; opacity: 0.16; }
+.figure-shine { fill: #fff; opacity: 0.4; }
+.figure-shine-line { fill: none; stroke: #fff; stroke-width: 1.4; stroke-linecap: round; opacity: 0.22; }
+
+.figure-hardhat { fill: #ffcf3f; stroke: rgba(0,0,0,0.25); stroke-width: 0.5; }
+.figure-hardhat-brim { fill: #d99e14; }
+.figure-hardhat-shine { fill: #fff; opacity: 0.45; }
+
+.figure-collar { fill: #eef3fb; opacity: 0.92; }
+.figure-tie { fill: var(--signal); }
+
+.figure-muff-band { fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; opacity: 0.9; }
+.figure-muff { fill: #1b2436; stroke: currentColor; stroke-width: 1.5; }
+.figure-muff-shine { fill: #fff; opacity: 0.25; }
+
+.figure-plug-foam { fill: #ffb648; stroke: rgba(0,0,0,0.2); stroke-width: 0.5; }
+.figure-plug-molded { fill: #4fd6ff; stroke: rgba(0,0,0,0.2); stroke-width: 0.5; }
+
+/* La protección "aparece" con un pequeño pop cuando se dibuja la tarjeta */
+.figure-gear-in { transform-origin: 30px 20px; animation: figure-gear-pop 0.35s cubic-bezier(.3,0,.2,1.4) both; }
+@keyframes figure-gear-pop {
+  0% { transform: scale(0.3); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scenario-figure-svg { animation: none; }
+  .figure-gear-in { animation: none; }
+}
