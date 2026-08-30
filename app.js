@@ -498,30 +498,59 @@ function playAlerta() {
     return "var(--signal)";
   }
 
-  // Silueta vectorial de persona (cabeza + cuerpo), vestida según su rol:
-  // "obrero" -> casco de seguridad · "oficina" -> corbata y cuello · "casa" -> sin accesorio.
-  // muffs=true agrega orejeras encima, para representar protección puesta.
-  function personFigureSvg(role, muffsOn, color) {
-    const HEAD = '<circle cx="30" cy="17" r="13" class="figure-head"/>';
-    const BODY = '<path d="M30 32 C15 32 9 46 9 62 L9 80 C9 86 14 90 20 90 L20 97 L28 97 L28 90 L32 90 L32 97 L40 97 L40 90 C46 90 51 86 51 80 L51 62 C51 46 45 32 30 32 Z" class="figure-body"/>';
+   // Silueta vectorial de persona, con dos capas independientes:
+  //  - role: "obrero" (casco) · "oficina" (camisa+corbata) · "casa" (sin accesorio)
+  //  - protection: "none" | "foam" | "molded" | "earmuff" | "double" — la protección auditiva puesta
+  function personFigureSvg(role, protection, color) {
+    const HEAD = '<circle cx="30" cy="18" r="12.5" class="figure-head"/>';
+    const HEAD_SHADE = '<path d="M30 5.5 A12.5 12.5 0 0 1 39 29 A12.5 12.5 0 0 1 30 5.5 Z" class="figure-head-shadow"/>';
+    const HEAD_SHINE = '<ellipse cx="25" cy="13" rx="5" ry="3.4" class="figure-shine"/>';
+    const BODY = '<path d="M30 31 C16 31 10 44 10 59 L10 78 C10 84 15 88 21 88 L21 95 L29 95 L29 88 L31 88 L31 95 L39 95 L39 88 C45 88 50 84 50 78 L50 59 C50 44 44 31 30 31 Z" class="figure-body"/>';
+    const BODY_SHADE = '<path d="M30 31 C40 31 46 40 48 52 L48 78 C48 83 44 87 39 88 L39 60 C39 46 35 35 30 31 Z" class="figure-body-shadow"/>';
+    const BODY_SHINE = '<path d="M18 40 C15 47 13 55 13 63 L13 76" class="figure-shine-line"/>';
+
     let accessory = "";
     if (role === "obrero") {
       accessory = `
-        <path d="M13 8 C13 -2 47 -2 47 8 L49 12 L11 12 Z" class="figure-hardhat"/>
-        <rect x="9" y="10" width="42" height="4" rx="2" class="figure-hardhat-brim"/>`;
+        <path d="M17 8.5 C17 1 43 1 43 8.5 L43.5 10.5 L16.5 10.5 Z" class="figure-hardhat"/>
+        <ellipse cx="24" cy="5.5" rx="6" ry="3" class="figure-hardhat-shine"/>
+        <rect x="14.5" y="9.5" width="31" height="3" rx="1.5" class="figure-hardhat-brim"/>`;
     } else if (role === "oficina") {
       accessory = `
-        <path d="M24 32 L30 44 L36 32 L33 30 L27 30 Z" class="figure-tie"/>
-        <path d="M22 30 L30 38 L38 30 L34 26 L26 26 Z" class="figure-collar"/>`;
+        <path d="M21.5 31 L30 41 L26 31.5 Z" class="figure-collar"/>
+        <path d="M38.5 31 L30 41 L34 31.5 Z" class="figure-collar"/>
+        <path d="M27.5 32.5 L32.5 32.5 L31 39 L33 56 L30 61 L27 56 L29 39 Z" class="figure-tie"/>`;
     }
-    const muffs = muffsOn
-      ? '<rect x="7" y="26" width="12" height="16" rx="5" class="figure-muff"/><rect x="41" y="26" width="12" height="16" rx="5" class="figure-muff"/><path d="M13 26 C13 14 21 8 30 8 C39 8 47 14 47 26" class="figure-muff-band"/>'
-      : "";
+
+    let gear = "";
+    if (protection === "earmuff" || protection === "double") {
+      gear += `
+        <path d="M12 20 C12 8 20 2 30 2 C40 2 48 8 48 20" class="figure-muff-band"/>
+        <rect x="6" y="17" width="11" height="15" rx="5" class="figure-muff"/>
+        <rect x="43" y="17" width="11" height="15" rx="5" class="figure-muff"/>
+        <ellipse cx="9.5" cy="21" rx="3" ry="4" class="figure-muff-shine"/>
+        <ellipse cx="46.5" cy="21" rx="3" ry="4" class="figure-muff-shine"/>`;
+    }
+    if (protection === "foam" || protection === "double") {
+      gear += `
+        <ellipse cx="9" cy="19" rx="3.4" ry="4.4" class="figure-plug-foam"/>
+        <ellipse cx="51" cy="19" rx="3.4" ry="4.4" class="figure-plug-foam"/>`;
+    }
+    if (protection === "molded") {
+      gear += `
+        <path d="M6 15 C10 13 12 16 11 21 C10 25 6 24 5.5 20 Z" class="figure-plug-molded"/>
+        <path d="M54 15 C50 13 48 16 49 21 C50 25 54 24 54.5 20 Z" class="figure-plug-molded"/>`;
+    }
+
     return `<svg viewBox="0 0 60 100" class="scenario-figure-svg" style="color:${color};" aria-hidden="true">
-      ${HEAD}${BODY}${accessory}${muffs}
+      ${BODY}${BODY_SHADE}${BODY_SHINE}
+      ${HEAD}${HEAD_SHADE}${HEAD_SHINE}
+      ${accessory}
+      <g class="figure-gear-in">${gear}</g>
     </svg>`;
   }
 
+  
   // ---- Banco de preguntas (se arma un test nuevo y random cada vez) ----
   const BANK = [
     { type: "mcq", q: "¿A partir de qué nivel de ruido continuo (8 h) suele exigirse protección auditiva?", options: ["70 dB", "85 dB", "110 dB", "130 dB"], correct: 1, explain: "85 dB es el umbral típico de acción: de ahí en adelante el tiempo seguro se acorta muy rápido." },
@@ -557,13 +586,13 @@ function playAlerta() {
     { type: "scenario", q: "Estos tres trabajadores están en sus puestos ahora mismo. ¿Cuál corre MENOS riesgo auditivo?",
       scenarios: [
         { label: "Amoladora, sin protección", effective: 115, protected: false, role: "obrero" },
-        { label: "Amoladora, doble protección", effective: 83, protected: true, role: "obrero" },
+        { label: "Amoladora, doble protección", effective: 83, protected: true, role: "obrero", protectionType: "double" },
         { label: "Oficina, sin protección", effective: 45, protected: false, role: "oficina" },
       ], correct: 2, explain: "La oficina a 45 dB no representa riesgo. El de doble protección bajó bastante su exposición, pero sigue siendo más alta que la oficina." },
     { type: "scenario", q: "Mismo puesto de taladro (100 dB), tres formas distintas de trabajar. ¿Cuál es la más riesgosa?",
       scenarios: [
-        { label: "Con orejeras", effective: 78, protected: true, role: "obrero" },
-        { label: "Con tapones de espuma", effective: 75, protected: true, role: "obrero" },
+        { label: "Con orejeras", effective: 78, protected: true, role: "obrero", protectionType: "earmuff" },
+        { label: "Con tapones de espuma", effective: 75, protected: true, role: "obrero", protectionType: "foam" },
         { label: "Sin ninguna protección", effective: 100, protected: false, role: "obrero" },
       ], correct: 2, explain: "Sin protección, 100 dB puede dañar el oído en minutos. Cualquiera de las dos protecciones baja el riesgo a un nivel seguro." },
 
@@ -627,8 +656,8 @@ function playAlerta() {
     { type: "scenario", q: "Misma extrusora, 102 dB. Tres formas de encararla. ¿Cuál deja al trabajador con MENOS riesgo?",
       scenarios: [
         { label: "Sin protección", effective: 102, protected: false, role: "obrero" },
-        { label: "Con tapones de espuma (-25 dB)", effective: 77, protected: true, role: "obrero" },
-        { label: "Con doble protección (-32 dB)", effective: 70, protected: true, role: "obrero" },
+        { label: "Con tapones de espuma (-25 dB)", effective: 77, protected: true, role: "obrero", protectionType: "foam" },
+        { label: "Con doble protección (-32 dB)", effective: 70, protected: true, role: "obrero", protectionType: "double" },
       ], correct: 2, explain: "Ambas protecciones bajan el riesgo a zona segura, pero la doble protección deja el nivel efectivo más bajo de las tres." },
 
     { type: "aging", q: "Tres plantas con el mismo nivel de ruido, 15 años de operación. ¿Cuál va a tener MÁS problemas de audición entre su personal?",
@@ -844,7 +873,7 @@ function playAlerta() {
       const color = riskColor(sc.effective);
       card.innerHTML = `
         <span class="scenario-risk-dot" style="background:${color}; color:${color};"></span>
-        ${personFigureSvg(sc.role || "casa", !!sc.protected, color)}
+        ${personFigureSvg(sc.role || "casa", sc.protectionType || (sc.protected ? "earmuff" : "none"), color)}
         <span class="scenario-label">${sc.label}</span>
         <span class="scenario-db" style="color:${color};">${sc.effective} dB efectivos</span>`;
       card.addEventListener("click", () => {
@@ -918,7 +947,7 @@ function playAlerta() {
       card.className = "scenario-card multiselect-card";
       card.innerHTML = `
         <span class="multiselect-check" aria-hidden="true"></span>
-        ${personFigureSvg(p.role || "casa", false, "var(--mist)")}
+        ${personFigureSvg(p.role || "casa", "none", "var(--mist)")}
         <span class="scenario-label">${p.label}</span>`;
       card.addEventListener("click", () => {
         if (answered) return;
