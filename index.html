@@ -507,7 +507,7 @@
 <section class="screen" id="screen-cortos" data-screen hidden>
   <p class="eyebrow">Cortometrajes</p>
   <h2 class="screen-title">Mismo trabajo, dos finales</h2>
-  <p class="hero-sub">Dos historias cortas grabadas para esta capacitación. Mirá cada una y escuchá el relato para entender qué está en juego.</p>
+  <p class="hero-sub">Dos historias cortas grabadas para esta capacitación. Mirá cada una y después escuchá el relato completo.</p>
 
   <div class="clip-tabs" id="clipTabs">
     <button type="button" class="clip-tab active" data-clip="1">
@@ -533,25 +533,51 @@
 
     <div class="video-progress"><span class="video-progress-fill" id="videoProgressFill"></span></div>
 
-    <div class="video-jump-cta" id="videoJumpCta" hidden>
-      <span>¿Y si sí te cuidás?</span>
-      <button type="button" id="videoJumpBtn">Ver el video 2 →</button>
+    <button type="button" class="video-jump-cta" id="videoJumpCta" hidden>
+      <span class="video-jump-pulse"></span>
+      <span class="video-jump-icon">🎧</span>
+      <span class="video-jump-text">Mirá el video 2</span>
+    </button>
+  </div>
+
+  <button type="button" class="cta-btn narrate-btn" id="narrateBtn">
+    <span class="narrate-btn-icon">▶</span> Escuchar el relato completo
+  </button>
+  <p class="sub-swipe-hint">Tocá una palabra remarcada para saber más · Deslizá el cuadro para leer la parte 2</p>
+
+  <div class="sub-book" id="subBook">
+    <div class="sub-book-inner" id="subBookInner">
+      <div class="sub-page-face sub-page-front">
+        <p class="sub-page-label">Relato — Parte 1 de 2</p>
+        <div class="sub-page-words" id="subWords1"></div>
+      </div>
+      <div class="sub-page-face sub-page-back">
+        <p class="sub-page-label">Relato — Parte 2 de 2</p>
+        <div class="sub-page-words" id="subWords2"></div>
+      </div>
     </div>
   </div>
 
-  <button type="button" class="cta-btn narrate-btn" id="narrateBtn">▶ Relatar este video con IA</button>
-
-  <div class="sub-page active" id="subPage1">
-    <p class="sub-page-label">Relato — Video 1 · Sin protección</p>
-    <p class="sub-page-words" id="subWords1"></p>
-  </div>
-  <div class="sub-page" id="subPage2">
-    <p class="sub-page-label">Relato — Video 2 · Con protección</p>
-    <p class="sub-page-words" id="subWords2"></p>
+  <div class="sub-nav">
+    <button type="button" class="sub-nav-dot active" id="subDot0" data-page="1" aria-label="Parte 1"></button>
+    <button type="button" class="sub-nav-dot" id="subDot1" data-page="2" aria-label="Parte 2"></button>
   </div>
 
   <audio id="narrationAudio1" src="audio/narracion-clip1.mp3" preload="none"></audio>
   <audio id="narrationAudio2" src="audio/narracion-clip2.mp3" preload="none"></audio>
+
+  <!-- Tarjeta emergente de palabra clave -->
+  <div class="key-info-backdrop" id="keyInfoBackdrop" hidden>
+    <div class="key-info-card" id="keyInfoCard">
+      <button type="button" class="key-info-close" id="keyInfoClose" aria-label="Cerrar">✕</button>
+      <div class="key-info-img-wrap">
+        <img class="key-info-img" id="keyInfoImg" src="" alt="">
+        <span class="key-info-img-fallback" id="keyInfoImgFallback">🎧</span>
+      </div>
+      <p class="key-info-title" id="keyInfoTitle">—</p>
+      <p class="key-info-text" id="keyInfoText">—</p>
+    </div>
+  </div>
 </section>
 
 </main>

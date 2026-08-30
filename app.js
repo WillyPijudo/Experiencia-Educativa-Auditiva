@@ -1439,7 +1439,7 @@ function playAlerta() {
   render();
 })();
 
-// ---- Cortometrajes: reproductor + relato narrado con IA + subtítulos ----
+// ---- Cortometrajes: reproductor + relato en 2 partes + libro de subtítulos ----
 (function cortos() {
   const clipTabs = document.querySelectorAll(".clip-tab");
   const video = document.getElementById("storyVideo");
@@ -1448,16 +1448,25 @@ function playAlerta() {
   const muteBtn = document.getElementById("videoMuteBtn");
   const progressFill = document.getElementById("videoProgressFill");
   const jumpCta = document.getElementById("videoJumpCta");
-  const jumpBtn = document.getElementById("videoJumpBtn");
   const narrateBtn = document.getElementById("narrateBtn");
-  const subPages = { 1: document.getElementById("subPage1"), 2: document.getElementById("subPage2") };
+  const subBook = document.getElementById("subBook");
+  const subBookInner = document.getElementById("subBookInner");
+  const subDots = [document.getElementById("subDot0"), document.getElementById("subDot1")];
   const subWordsEl = { 1: document.getElementById("subWords1"), 2: document.getElementById("subWords2") };
   const narrAudio = { 1: document.getElementById("narrationAudio1"), 2: document.getElementById("narrationAudio2") };
+  const keyBackdrop = document.getElementById("keyInfoBackdrop");
+  const keyCard = document.getElementById("keyInfoCard");
+  const keyClose = document.getElementById("keyInfoClose");
+  const keyImg = document.getElementById("keyInfoImg");
+  const keyImgFallback = document.getElementById("keyInfoImgFallback");
+  const keyTitle = document.getElementById("keyInfoTitle");
+  const keyText = document.getElementById("keyInfoText");
   if (!video) return;
 
   const VIDEO_SRC = { 1: "video/videoedu1.mp4", 2: "video/videoedu2.mp4" };
+  const MICRO_PAUSE_MS = 500;
 
-  // [segundo de inicio, palabra] — extraído de las narraciones de la IA
+  // [segundo de inicio, palabra] — el relato es UNO solo, partido en 2 audios
   const WORDS = {
     1: [
       [0.2, "Lo"], [0.3, "que"], [0.42, "viste"], [0.68, "en"], [0.76, "los"], [0.92, "2"],
@@ -1492,10 +1501,49 @@ function playAlerta() {
     ],
   };
 
-  const KEY_WORDS = new Set([
-    "celulas", "ciliadas", "tinnitus", "irreversibles", "danos", "dano",
-    "proteccion", "precauciones", "estres", "permanentes",
-  ]);
+  // Palabra normalizada -> ficha de información tocable
+  const KEY_MAP = {
+    celulas: "cel_ciliadas", ciliadas: "cel_ciliadas",
+    tinnitus: "tinnitus",
+    danos: "dano_irreversible", dano: "dano_irreversible",
+    irreversibles: "dano_irreversible", irreversible: "dano_irreversible",
+    permanentes: "dano_irreversible",
+    proteccion: "proteccion", precauciones: "proteccion",
+    estres: "estres",
+  };
+
+  const KEY_INFO = {
+    cel_ciliadas: {
+      title: "Células ciliadas",
+      img: "img/celulas-ciliadas.jpg",
+      fallback: "🧬",
+      text: "Son las que traducen el sonido en señales para el cerebro, adentro de la cóclea. El cuerpo nace con una cantidad fija: cuando el ruido las daña, no vuelven a crecer nunca más. Cada exposición sin protección es, literalmente, gastar una reserva que no se recarga.",
+    },
+    tinnitus: {
+      title: "Tinnitus (zumbido constante)",
+      img: "img/tinnitus.jpg",
+      fallback: "🔔",
+      text: "Es un pitido o zumbido que se escucha aunque no haya ningún sonido real. Suele aparecer después de exposiciones fuertes y, en muchos casos, se queda para siempre: no hay una cura garantizada. Puede afectar el sueño, la concentración y el humor día a día.",
+    },
+    dano_irreversible: {
+      title: "Daño irreversible",
+      img: "img/dano-auditivo.jpg",
+      fallback: "⚠️",
+      text: "A diferencia de un corte o un moretón, el daño en el oído interno no cicatriza. Una vez perdida, esa audición no vuelve — por eso la única estrategia que funciona es prevenir antes, no tratar después.",
+    },
+    proteccion: {
+      title: "Protección auditiva",
+      img: "img/proteccion-auditiva.jpg",
+      fallback: "🎧",
+      text: "Tapones de espuma, moldeados u orejeras: cualquiera de estas opciones reduce muchísimo el riesgo, y combinadas (doble protección) todavía más. Es un segundo de esfuerzo hoy a cambio de seguir escuchando bien dentro de 20 años.",
+    },
+    estres: {
+      title: "Estrés por ruido",
+      img: "img/estres-ruido.jpg",
+      fallback: "😣",
+      text: "El ruido constante no solo daña el oído: también sube el cansancio, la irritabilidad y baja la concentración en la tarea. Trabajar más silencioso (o bien protegido) es trabajar más seguro, en más de un sentido.",
+    },
+  };
 
   function normalize(w) {
     return w.toLowerCase()
@@ -1503,15 +1551,26 @@ function playAlerta() {
       .replace(/[^a-z0-9]/g, "");
   }
 
-  function buildWords(clip) {
-    const container = subWordsEl[clip];
+  function buildWords(part) {
+    const container = subWordsEl[part];
     container.innerHTML = "";
-    WORDS[clip].forEach(([start, text]) => {
+    WORDS[part].forEach(([start, text]) => {
       const span = document.createElement("span");
       span.className = "sub-word";
-      if (KEY_WORDS.has(normalize(text))) span.classList.add("sub-key");
+      const keyId = KEY_MAP[normalize(text)];
+      if (keyId) {
+        span.classList.add("sub-key");
+        span.dataset.key = keyId;
+        span.setAttribute("role", "button");
+      }
       span.dataset.start = start;
       span.textContent = text;
+      if (keyId) {
+        const dot = document.createElement("sup");
+        dot.className = "sub-key-dot";
+        dot.textContent = "●";
+        span.appendChild(dot);
+      }
       container.appendChild(span);
       container.appendChild(document.createTextNode(" "));
     });
@@ -1519,46 +1578,105 @@ function playAlerta() {
   buildWords(1);
   buildWords(2);
 
-  function resetWords(clip) {
-    subWordsEl[clip].querySelectorAll(".sub-word").forEach((s) => {
+  function resetWords(part) {
+    subWordsEl[part].querySelectorAll(".sub-word").forEach((s) => {
       s.classList.remove("sub-shown", "sub-active");
     });
   }
 
+  // ---- Libro de subtítulos: flip + swipe + puntitos ----
+  let currentPage = 1;
+  function goToPage(n, opts) {
+    const silent = opts && opts.silent;
+    currentPage = n;
+    subBookInner.classList.toggle("flipped", n === 2);
+    subDots.forEach((d, i) => d.classList.toggle("active", i === n - 1));
+    if (!silent) stopNarration();
+  }
+  subDots.forEach((dot) => {
+    dot.addEventListener("click", () => goToPage(Number(dot.dataset.page)));
+  });
+  let touchStartX = null;
+  subBook.addEventListener("touchstart", (e) => { touchStartX = e.touches[0].clientX; }, { passive: true });
+  subBook.addEventListener("touchend", (e) => {
+    if (touchStartX === null) return;
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    touchStartX = null;
+    if (Math.abs(dx) < 40) return;
+    if (dx < 0 && currentPage === 1) goToPage(2);
+    else if (dx > 0 && currentPage === 2) goToPage(1);
+  }, { passive: true });
+
+  // ---- Tarjeta de palabra clave ----
+  function openKeyInfo(id) {
+    const info = KEY_INFO[id];
+    if (!info) return;
+    stopNarration();
+    keyTitle.textContent = info.title;
+    keyText.textContent = info.text;
+    keyImgFallback.textContent = info.fallback;
+    keyImg.removeAttribute("src");
+    keyImg.style.display = "none";
+    keyImgFallback.style.display = "flex";
+    const probe = new Image();
+    probe.onload = () => {
+      keyImg.src = info.img;
+      keyImg.style.display = "block";
+      keyImgFallback.style.display = "none";
+    };
+    probe.src = info.img;
+    keyBackdrop.hidden = false;
+    requestAnimationFrame(() => keyBackdrop.classList.add("open"));
+  }
+  function closeKeyInfo() {
+    keyBackdrop.classList.remove("open");
+    setTimeout(() => { keyBackdrop.hidden = true; }, 250);
+  }
+  [subWordsEl[1], subWordsEl[2]].forEach((el) => {
+    el.addEventListener("click", (e) => {
+      const target = e.target.closest(".sub-key");
+      if (target) openKeyInfo(target.dataset.key);
+    });
+  });
+  keyClose.addEventListener("click", closeKeyInfo);
+  keyBackdrop.addEventListener("click", (e) => { if (e.target === keyBackdrop) closeKeyInfo(); });
+
+  // ---- Video: tabs, play/pause, mute, progreso, cta al video 2 ----
   let currentClip = 1;
+  let narrateTimer = null;
+
+  function stopNarration() {
+    clearTimeout(narrateTimer);
+    narrAudio[1].pause();
+    narrAudio[2].pause();
+    narrateBtn.classList.remove("is-narrating");
+    narrateBtn.innerHTML = '<span class="narrate-btn-icon">▶</span> Escuchar el relato completo';
+  }
 
   function stopAll() {
     video.pause();
-    narrAudio[1].pause();
-    narrAudio[2].pause();
+    stopNarration();
     playBtn.classList.remove("is-playing");
-    narrateBtn.textContent = "▶ Relatar este video con IA";
   }
   window.stopCortos = stopAll;
 
   function switchClip(n) {
-    stopAll();
+    video.pause();
+    playBtn.classList.remove("is-playing");
     currentClip = n;
     clipTabs.forEach((b) => b.classList.toggle("active", Number(b.dataset.clip) === n));
-    subPages[1].classList.toggle("active", n === 1);
-    subPages[2].classList.toggle("active", n === 2);
-    resetWords(1);
-    resetWords(2);
     videoSource.src = VIDEO_SRC[n];
     video.load();
     progressFill.style.width = "0%";
     jumpCta.hidden = true;
   }
-
   clipTabs.forEach((btn) => {
     btn.addEventListener("click", () => switchClip(Number(btn.dataset.clip)));
   });
 
   function togglePlay() {
     if (video.paused) {
-      narrAudio[1].pause();
-      narrAudio[2].pause();
-      narrateBtn.textContent = "▶ Relatar este video con IA";
+      stopNarration();
       video.play().catch(() => {});
     } else {
       video.pause();
@@ -1573,7 +1691,13 @@ function playAlerta() {
   });
   video.addEventListener("ended", () => {
     playBtn.classList.remove("is-playing");
-    if (currentClip === 1) jumpCta.hidden = false;
+    if (currentClip === 1) {
+      jumpCta.hidden = false;
+      // relanza la animación de entrada por si ya se había mostrado antes
+      jumpCta.style.animation = "none";
+      void jumpCta.offsetWidth;
+      jumpCta.style.animation = "";
+    }
   });
 
   muteBtn.addEventListener("click", () => {
@@ -1581,31 +1705,42 @@ function playAlerta() {
     muteBtn.textContent = video.muted ? "🔇" : "🔊";
   });
 
-  jumpBtn.addEventListener("click", () => {
+  jumpCta.addEventListener("click", () => {
+    jumpCta.hidden = true;
     switchClip(2);
     video.play().catch(() => {});
   });
 
-  narrateBtn.addEventListener("click", () => {
-    const audio = narrAudio[currentClip];
-    if (!audio.paused) {
-      audio.pause();
-      narrateBtn.textContent = "▶ Relatar este video con IA";
-      return;
-    }
+  // ---- Relato completo: parte 1 -> micropausa -> parte 2, con flip automático ----
+  function playPart(part) {
     video.pause();
-    resetWords(currentClip);
-    narrateBtn.textContent = "⏸ Relatando…";
+    resetWords(part);
+    goToPage(part, { silent: true });
+    narrateBtn.classList.add("is-narrating");
+    narrateBtn.innerHTML = `<span class="narrate-btn-icon">⏸</span> Relatando… (parte ${part} de 2)`;
+    const audio = narrAudio[part];
     audio.currentTime = 0;
-    audio.play().catch(() => {
-      narrateBtn.textContent = "▶ Relatar este video con IA";
-    });
+    audio.play().catch(() => stopNarration());
+  }
+
+  narrateBtn.addEventListener("click", () => {
+    const isNarrating = narrateBtn.classList.contains("is-narrating");
+    if (isNarrating) { stopNarration(); return; }
+    playPart(1);
   });
 
-  [1, 2].forEach((clip) => {
-    const audio = narrAudio[clip];
+  narrAudio[1].addEventListener("ended", () => {
+    if (!narrateBtn.classList.contains("is-narrating")) return;
+    narrateTimer = setTimeout(() => playPart(2), MICRO_PAUSE_MS);
+  });
+  narrAudio[2].addEventListener("ended", () => {
+    stopNarration();
+  });
+
+  [1, 2].forEach((part) => {
+    const audio = narrAudio[part];
     audio.addEventListener("timeupdate", () => {
-      const spans = subWordsEl[clip].querySelectorAll(".sub-word");
+      const spans = subWordsEl[part].querySelectorAll(".sub-word");
       let activeSpan = null;
       spans.forEach((span) => {
         const start = Number(span.dataset.start);
@@ -1619,11 +1754,7 @@ function playAlerta() {
       });
       if (activeSpan) activeSpan.classList.add("sub-active");
     });
-    audio.addEventListener("ended", () => {
-      if (currentClip === clip) narrateBtn.textContent = "▶ Relatar este video con IA";
-      subWordsEl[clip].querySelectorAll(".sub-word").forEach((s) => s.classList.remove("sub-active"));
-    });
   });
 
-  switchClip(1);
+  goToPage(1, { silent: true });
 })();

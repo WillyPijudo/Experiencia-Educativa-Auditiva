@@ -1634,7 +1634,7 @@ p, .hero-sub, .stat-text, .tool-desc, .epp-card p, .readout-note, .cilia-note, .
 .story-text { font-size: 14px; color: var(--paper); line-height: 1.55; }
 
 /* ==========================================================
-   CORTOMETRAJES — reproductor 9:16 + relato narrado + subtítulos
+   CORTOMETRAJES — reproductor 9:16 + relato en 2 partes + subtítulos
    ========================================================== */
 .clip-tabs { display: flex; gap: 10px; margin-bottom: 16px; }
 .clip-tab {
@@ -1692,7 +1692,6 @@ p, .hero-sub, .stat-text, .tool-desc, .epp-card p, .readout-note, .cilia-note, .
 .video-play-btn svg { width: 26px; height: 26px; fill: var(--paper); margin-left: 3px; }
 .video-play-btn:active { transform: translate(-50%, -50%) scale(0.92); }
 .video-play-btn.is-playing { opacity: 0; pointer-events: none; }
-.video-stage:active .video-play-btn.is-playing { opacity: 0.001; } /* evita flash al togglear */
 
 .video-mute-btn {
   position: absolute; right: 10px; top: 10px;
@@ -1712,41 +1711,82 @@ p, .hero-sub, .stat-text, .tool-desc, .epp-card p, .readout-note, .cilia-note, .
 }
 .video-progress-fill { display: block; height: 100%; width: 0%; background: var(--hologram); transition: width 0.1s linear; }
 
+/* ---- CTA para saltar al video 2: chip flotante que aparece solo al terminar ---- */
 .video-jump-cta {
-  position: absolute; left: 10px; right: 10px; bottom: 16px;
-  display: flex; flex-direction: column; align-items: center; gap: 8px;
-  padding: 12px 10px;
-  border-radius: 14px;
-  background: rgba(10, 14, 23, 0.82);
-  border: 1px solid rgba(52,224,161,0.4);
-  text-align: center;
-  animation: jump-cta-pop 0.4s ease both;
-  z-index: 3;
-}
-@keyframes jump-cta-pop { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-.video-jump-cta span { font-family: var(--font-fun); font-size: 12.5px; color: var(--paper); }
-.video-jump-cta button {
+  position: absolute; right: 10px; bottom: 14px;
+  display: flex; align-items: center; gap: 6px;
+  padding: 9px 14px 9px 10px;
   border: none;
-  border-radius: 10px;
-  padding: 8px 14px;
-  background: var(--mint);
+  border-radius: 999px;
+  background: linear-gradient(120deg, var(--mint), #1fbf8a);
   color: var(--ink);
-  font-family: var(--font-display);
-  font-size: 11.5px;
-  letter-spacing: 0.5px;
+  font-family: var(--font-fun);
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: 0 8px 18px rgba(52,224,161,0.4);
+  z-index: 3;
+  opacity: 0;
+  transform: scale(0.4) translateY(10px);
+  animation: jump-cta-in 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+.video-jump-cta[hidden] { display: none; }
+@keyframes jump-cta-in {
+  0% { opacity: 0; transform: scale(0.3) translateY(14px); }
+  60% { opacity: 1; transform: scale(1.08) translateY(-2px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+.video-jump-icon { font-size: 14px; }
+.video-jump-pulse {
+  position: absolute; inset: -6px;
+  border-radius: 999px;
+  border: 2px solid var(--mint);
+  opacity: 0.6;
+  animation: jump-pulse-ring 1.8s ease-out infinite;
+  pointer-events: none;
+}
+@keyframes jump-pulse-ring {
+  0% { transform: scale(0.85); opacity: 0.55; }
+  100% { transform: scale(1.35); opacity: 0; }
+}
+.video-jump-cta:active { transform: scale(0.94); }
+
+/* ---- Botón de relato ---- */
+.narrate-btn { margin-bottom: 8px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.narrate-btn-icon { display: inline-block; transition: transform 0.2s ease; }
+.narrate-btn.is-narrating .narrate-btn-icon { transform: scale(1.15); }
+.sub-swipe-hint {
+  text-align: center;
+  font-size: 11px;
+  color: var(--mist);
+  margin: 0 0 14px;
+  line-height: 1.4;
 }
 
-.narrate-btn { margin-bottom: 16px; }
-
-/* Páginas de subtítulos: una por clip, se alterna con las tabs */
-.sub-page {
-  display: none;
+/* ---- Libro de subtítulos: dos caras, se da vuelta como una página ---- */
+.sub-book {
+  perspective: 1400px;
+  margin-bottom: 12px;
+  touch-action: pan-y;
+}
+.sub-book-inner {
+  position: relative;
+  min-height: 210px;
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.45, 0.05, 0.15, 1);
+}
+.sub-book-inner.flipped { transform: rotateY(-180deg); }
+.sub-page-face {
+  position: absolute; inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
   background: var(--ink-2);
   border: 1px solid var(--border);
   border-radius: 16px;
   padding: 16px;
+  overflow-y: auto;
+  max-height: 300px;
 }
-.sub-page.active { display: block; }
+.sub-page-back { transform: rotateY(180deg); }
 .sub-page-label {
   font-family: var(--font-mono);
   font-size: 10.5px;
@@ -1754,29 +1794,130 @@ p, .hero-sub, .stat-text, .tool-desc, .epp-card p, .readout-note, .cilia-note, .
   color: var(--hologram);
   margin-bottom: 10px;
 }
+
+/* ---- Palabras: revelado con más carácter que un simple pop ---- */
 .sub-page-words {
   font-size: 15px;
-  line-height: 1.85;
+  line-height: 2;
   color: var(--mist);
 }
 .sub-word {
-  opacity: 0.28;
-  transition: opacity 0.15s ease, color 0.15s ease;
+  display: inline-block;
+  opacity: 0.25;
+  filter: blur(2px);
+  transform: translateY(5px) scale(0.94);
+  transition: opacity 0.32s ease, filter 0.32s ease, transform 0.32s cubic-bezier(0.2, 0.9, 0.3, 1.3), color 0.25s ease;
 }
-.sub-word.sub-shown { opacity: 1; color: var(--paper); }
+.sub-word.sub-shown { opacity: 1; filter: blur(0); transform: translateY(0) scale(1); color: var(--paper); }
 .sub-word.sub-active {
   color: var(--hologram);
-  animation: sub-pop 0.28s ease;
+  text-shadow: 0 0 12px rgba(79,214,255,0.55);
+  transform: translateY(-2px) scale(1.08);
 }
-@keyframes sub-pop {
-  0% { transform: scale(0.85); opacity: 0.5; }
-  60% { transform: scale(1.12); }
-  100% { transform: scale(1); }
+
+/* Palabras clave: tocables, con marca visual propia */
+.sub-key {
+  cursor: pointer;
+  position: relative;
+  padding: 0 2px;
+  border-radius: 4px;
 }
-.sub-word.sub-key.sub-shown { color: var(--signal); font-weight: 700; }
-.sub-word.sub-key.sub-active { color: var(--signal); }
+.sub-key.sub-shown {
+  color: var(--signal);
+  font-weight: 700;
+  background: linear-gradient(rgba(255,92,122,0.16), rgba(255,92,122,0.16)) no-repeat left bottom / 100% 2px;
+  animation: key-underline 0.5s ease forwards;
+}
+.sub-key.sub-active { color: var(--signal); text-shadow: 0 0 12px rgba(255,92,122,0.55); }
+@keyframes key-underline {
+  from { background-size: 0% 2px; }
+  to { background-size: 100% 2px; }
+}
+.sub-key-dot {
+  display: inline-block;
+  font-size: 9px;
+  vertical-align: super;
+  margin-left: 1px;
+  color: var(--signal);
+  opacity: 0.85;
+  animation: key-dot-blink 1.6s ease-in-out infinite;
+}
+@keyframes key-dot-blink { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+
+/* ---- Navegación del libro (puntitos + swipe) ---- */
+.sub-nav { display: flex; justify-content: center; gap: 8px; margin-bottom: 18px; }
+.sub-nav-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  border: none;
+  background: var(--ink-3);
+  padding: 0;
+  transition: background 0.2s ease, transform 0.2s ease, width 0.2s ease;
+}
+.sub-nav-dot.active { background: var(--hologram); width: 20px; border-radius: 4px; }
+
+/* ---- Tarjeta emergente de palabra clave (imagen + info breve) ---- */
+.key-info-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(5, 8, 14, 0.72);
+  backdrop-filter: blur(3px);
+  z-index: 60;
+  display: flex; align-items: flex-end;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.key-info-backdrop[hidden] { display: none; }
+.key-info-backdrop.open { opacity: 1; }
+.key-info-card {
+  width: 100%;
+  background: var(--ink-2);
+  border-top: 1px solid var(--border);
+  border-radius: 24px 24px 0 0;
+  padding: 20px 20px calc(28px + var(--safe-area-b));
+  position: relative;
+  transform: translateY(100%);
+  transition: transform 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+.key-info-backdrop.open .key-info-card { transform: translateY(0); }
+.key-info-close {
+  position: absolute; right: 14px; top: 14px;
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--ink-3);
+  color: var(--mist);
+  font-size: 13px;
+}
+.key-info-img-wrap {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 16px;
+  overflow: hidden;
+  background: linear-gradient(140deg, var(--ink-3), var(--ink));
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 16px;
+  position: relative;
+}
+.key-info-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.key-info-img[src=""], .key-info-img:not([src]) { display: none; }
+.key-info-img-fallback {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 40px;
+  opacity: 0.7;
+}
+.key-info-title {
+  font-family: var(--font-display);
+  font-size: 16px;
+  letter-spacing: 0.5px;
+  color: var(--signal);
+  margin-bottom: 10px;
+}
+.key-info-text { font-size: 14.5px; line-height: 1.6; color: var(--paper); }
 
 @media (prefers-reduced-motion: reduce) {
-  .sub-word { animation: none !important; transition: none; }
-  .video-jump-cta { animation: none; }
+  .sub-word { transition: opacity 0.15s ease; filter: none; transform: none; }
+  .video-jump-cta { animation: none; opacity: 1; transform: none; }
+  .video-jump-pulse { animation: none; }
+  .sub-book-inner { transition: none; }
 }
