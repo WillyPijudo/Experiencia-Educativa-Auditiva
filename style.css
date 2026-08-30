@@ -1529,7 +1529,9 @@ p, .hero-sub, .stat-text, .tool-desc, .epp-card p, .readout-note, .cilia-note, .
 /* ==========================================================
    SIMULADOR: datos rápidos sin scrollear
    ========================================================== */
-.quick-stats { display: flex; gap: 10px; margin: 4px 0 10px; }
+.quick-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 4px 0 10px; }
+.quick-stat-time { grid-column: 1 / -1; flex-direction: row !important; align-items: center; justify-content: space-between; }
+.quick-stat-time .quick-stat-value { font-family: var(--font-mono); font-size: 18px; }
 .quick-stat {
   flex: 1;
   background: var(--ink-2);
