@@ -732,27 +732,25 @@ body::before {
 .cilia-title { font-size: 15px; margin-bottom: 10px; }
 .cilia-svg {
   width: 100%; height: auto; margin-bottom: 10px;
-  perspective: 420px;
   border-radius: 12px;
   background: radial-gradient(65% 85% at 50% 100%, rgba(79,214,255,0.12), transparent 72%);
 }
 .cilia-hair {
-  stroke: url(#hairGrad);
+  stroke: var(--mint);
   stroke-width: 3;
   stroke-linecap: round;
   transform-origin: bottom center;
   transform-box: fill-box;
-  transform: rotateX(14deg);
-  filter: drop-shadow(0 2px 1.5px rgba(0,0,0,0.45));
+  filter: drop-shadow(0 2px 1.5px rgba(0,0,0,0.45)) drop-shadow(0 0 3px rgba(52,224,161,0.35));
   animation: hair-wave 2.4s ease-in-out infinite;
   transition: stroke 0.4s ease, filter 0.4s ease, opacity 0.4s ease;
 }
-@keyframes hair-wave { 0%, 100% { transform: rotateX(14deg) rotate(-2deg); } 50% { transform: rotateX(14deg) rotate(2deg); } }
+@keyframes hair-wave { 0%, 100% { transform: rotate(-3deg) scaleY(0.97); } 50% { transform: rotate(3deg) scaleY(1.03); } }
 .cilia-hair.cilia-damaged {
-  stroke: url(#hairGradDamaged);
+  stroke: var(--mist);
   animation: none;
-  transform: rotateX(14deg) rotate(58deg);
-  opacity: 0.6;
+  transform: rotate(58deg) scaleY(0.85);
+  opacity: 0.55;
   filter: drop-shadow(0 1px 1px rgba(0,0,0,0.3));
 }
 .cilia-base { stroke: var(--border); stroke-width: 2; }
@@ -1593,3 +1591,44 @@ p, .hero-sub, .stat-text, .tool-desc, .epp-card p, .readout-note, .cilia-note, .
 #screen-test          { background: radial-gradient(120% 55% at 50% 0%, rgba(255,92,122,0.07), transparent 62%); }
 #screen-herramientas  { background: radial-gradient(120% 55% at 50% 0%, rgba(52,224,161,0.08), transparent 62%); }
 #screen-empresa       { background: radial-gradient(120% 55% at 50% 0%, rgba(79,214,255,0.06), rgba(255,92,122,0.04) 55%, transparent 68%); }
+
+/* ---- Historia interactiva ---- */
+.story-stage { display: flex; align-items: center; gap: 14px; margin-bottom: 8px; }
+.story-figure { width: 54%; height: auto; flex-shrink: 0; }
+.story-line { stroke: var(--mist); stroke-width: 5; fill: none; stroke-linecap: round; transition: stroke 0.4s ease; }
+.story-machine { fill: var(--ink-3); stroke: var(--hologram); stroke-width: 2; }
+.story-ear-dot { fill: var(--signal); animation: dot-pulse 1.6s ease-in-out infinite; }
+
+.story-zoom { flex: 1; text-align: center; }
+.story-zoom-ring {
+  width: 100px; height: 100px;
+  margin: 0 auto;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: var(--ink-2);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 8px 18px rgba(0,0,0,0.4), inset 0 0 12px rgba(79,214,255,0.08);
+}
+.story-zoom-label { display: block; margin-top: 8px; font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.5px; color: var(--mist); }
+
+#storyCiliaRow { display: flex; gap: 2px; align-items: flex-end; height: 46px; width: 72px; }
+.story-hair { flex: 1; background: var(--mint); border-radius: 2px; height: 100%; transition: background 0.4s ease, height 0.4s ease, opacity 0.4s ease; }
+.story-hair-dead { background: var(--mist); height: 32%; opacity: 0.6; }
+
+.story-steps { display: flex; gap: 6px; overflow-x: auto; margin: 18px 0 14px; padding-bottom: 4px; scrollbar-width: none; }
+.story-steps::-webkit-scrollbar { display: none; }
+.story-step-btn {
+  flex-shrink: 0; padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--ink-2);
+  color: var(--mist);
+  font-family: var(--font-fun);
+  font-size: 12px;
+  white-space: nowrap;
+}
+.story-step-btn.active { border-color: var(--hologram); color: var(--hologram); background: rgba(79,214,255,0.08); }
+
+.story-card { background: var(--ink-2); border: 1px solid var(--border); border-radius: 16px; padding: 18px; }
+.story-damage { display: block; font-family: var(--font-poster); font-size: 17px; color: var(--signal); margin-bottom: 8px; transition: color 0.3s ease; }
+.story-text { font-size: 14px; color: var(--paper); line-height: 1.55; }

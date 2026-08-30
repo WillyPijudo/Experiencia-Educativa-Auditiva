@@ -1369,3 +1369,71 @@ function playAlerta() {
 
   window.ear3D = { init, pause, resume };
 })();
+
+// ---- Historia interactiva: dos caminos a 30 años ----
+(function storySection() {
+  const pathButtons = document.querySelectorAll("#storyPathToggle .view-toggle-btn");
+  const stepButtons = document.querySelectorAll(".story-step-btn");
+  const damageEl = document.getElementById("storyDamage");
+  const textEl = document.getElementById("storyText");
+  const ciliaRow = document.getElementById("storyCiliaRow");
+  if (!pathButtons.length || !ciliaRow) return;
+
+  const STORY = {
+    sin: [
+      { damage: 0, text: "Primer día en la línea de extrusión. El oído está intacto. Nadie le entregó protección auditiva todavía — \"ya te la dan después\", le dijeron." },
+      { damage: 17, text: "Empieza a subir el volumen de la tele más de lo normal en su casa. Piensa que es la tele la que está fallando." },
+      { damage: 38, text: "En las reuniones de turno le cuesta seguir cuando hablan varios a la vez. Lo atribuye al cansancio, no al oído." },
+      { damage: 67, text: "Le diagnostican hipoacusia inducida por ruido. Ya es irreversible: perdió sobre todo la capacidad de distinguir sonidos agudos." },
+      { damage: 92, text: "Depende de audífonos para seguir una conversación normal. El daño se instaló de a poco, sin un momento dramático — por eso nunca lo vio venir." },
+    ],
+    con: [
+      { damage: 0, text: "Primer día en la línea de extrusión. Le entregan protectores auditivos y le muestran cómo colocarlos bien desde la inducción." },
+      { damage: 2, text: "Usa la protección todos los días, sin excepción. Su audición sigue prácticamente intacta." },
+      { damage: 4, text: "Una exposición puntual sin protección (un imprevisto en planta, una changa el fin de semana) dejó un daño mínimo, pero controlado." },
+      { damage: 6, text: "Sigue escuchando bien. El hábito de protegerse se volvió automático, como ponerse el cinturón de seguridad." },
+      { damage: 9, text: "Se jubila con una audición muy cercana a la normal para su edad. La diferencia con el otro camino no fue la suerte: fue una costumbre diaria." },
+    ],
+  };
+
+  const HAIR_COUNT = 14;
+  for (let i = 0; i < HAIR_COUNT; i++) {
+    const hair = document.createElement("span");
+    hair.className = "story-hair";
+    hair.style.animationDelay = `${(i * 0.1).toFixed(2)}s`;
+    ciliaRow.appendChild(hair);
+  }
+  const hairs = ciliaRow.querySelectorAll(".story-hair");
+
+  let path = "sin";
+  let stepIndex = 0;
+
+  function render() {
+    const data = STORY[path][stepIndex];
+    damageEl.textContent = `${data.damage}% de células dañadas`;
+    damageEl.style.color = data.damage === 0 ? "var(--mint)" : data.damage < 30 ? "var(--hologram)" : "var(--signal)";
+    textEl.textContent = data.text;
+    const damagedCount = Math.round((data.damage / 100) * HAIR_COUNT);
+    hairs.forEach((h, i) => h.classList.toggle("story-hair-dead", i < damagedCount));
+  }
+
+  pathButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      pathButtons.forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      path = btn.dataset.path;
+      render();
+    });
+  });
+
+  stepButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      stepButtons.forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      stepIndex = Number(btn.dataset.step);
+      render();
+    });
+  });
+
+  render();
+})();
