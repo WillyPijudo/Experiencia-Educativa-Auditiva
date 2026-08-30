@@ -556,15 +556,15 @@ function playAlerta() {
 
     { type: "scenario", q: "Estos tres trabajadores están en sus puestos ahora mismo. ¿Cuál corre MENOS riesgo auditivo?",
       scenarios: [
-        { label: "Amoladora, sin protección", effective: 115, protected: false },
-        { label: "Amoladora, doble protección", effective: 83, protected: true },
-        { label: "Oficina, sin protección", effective: 45, protected: false },
+        { label: "Amoladora, sin protección", effective: 115, protected: false, role: "obrero" },
+        { label: "Amoladora, doble protección", effective: 83, protected: true, role: "obrero" },
+        { label: "Oficina, sin protección", effective: 45, protected: false, role: "oficina" },
       ], correct: 2, explain: "La oficina a 45 dB no representa riesgo. El de doble protección bajó bastante su exposición, pero sigue siendo más alta que la oficina." },
     { type: "scenario", q: "Mismo puesto de taladro (100 dB), tres formas distintas de trabajar. ¿Cuál es la más riesgosa?",
       scenarios: [
-        { label: "Con orejeras", effective: 78, protected: true },
-        { label: "Con tapones de espuma", effective: 75, protected: true },
-        { label: "Sin ninguna protección", effective: 100, protected: false },
+        { label: "Con orejeras", effective: 78, protected: true, role: "obrero" },
+        { label: "Con tapones de espuma", effective: 75, protected: true, role: "obrero" },
+        { label: "Sin ninguna protección", effective: 100, protected: false, role: "obrero" },
       ], correct: 2, explain: "Sin protección, 100 dB puede dañar el oído en minutos. Cualquiera de las dos protecciones baja el riesgo a un nivel seguro." },
 
     { type: "timeline", q: "Un trabajador está expuesto a 100 dB, sin protección, 8 horas por día, todos los días. ¿En cuánto tiempo el daño en las células ciliadas suele volverse severo?",
@@ -586,17 +586,17 @@ function playAlerta() {
         { label: "10 años, protección solo \"a veces\"", years: 10, damage: 40 },
       ], correct: 1, explain: "Usar protección desde el principio, todos los días, es lo que realmente frena el daño — no alcanza con usarla 'a veces'." },
 
-    { type: "scenario", q: "Tres situaciones en una planta de neumáticos. ¿Cuál necesita protección auditiva SÍ o SÍ?",
+      { type: "scenario", q: "Tres situaciones en una planta de neumáticos. ¿Cuál necesita protección auditiva SÍ o SÍ?",
       scenarios: [
-        { label: "Operando la extrusora de banda de rodamiento (ruido continuo alto)", effective: 102, protected: false },
-        { label: "Cargando datos en la oficina de control de calidad", effective: 48, protected: false },
-        { label: "Usando un taladro en casa, 10 minutos, un sábado", effective: 100, protected: false },
+        { label: "Operando la extrusora de banda de rodamiento (ruido continuo alto)", effective: 102, protected: false, role: "obrero" },
+        { label: "Cargando datos en la oficina de control de calidad", effective: 48, protected: false, role: "oficina" },
+        { label: "Usando un taladro en casa, 10 minutos, un sábado", effective: 100, protected: false, role: "casa" },
       ], correct: 0, explain: "El puesto de extrusora es ruido alto y continuo durante toda la jornada: ahí la protección no es opcional. El taladro en casa es un uso breve y ocasional; igual conviene protegerse, pero el riesgo acumulado no es comparable a 8 horas por día en planta." },
-    { type: "scenario", q: "Herramienta eléctrica en casa vs. la misma máquina en la fábrica, ambas a 100 dB. ¿Qué cambia realmente el riesgo?",
+       { type: "scenario", q: "Herramienta eléctrica en casa vs. la misma máquina en la fábrica, ambas a 100 dB. ¿Qué cambia realmente el riesgo?",
       scenarios: [
-        { label: "En casa: 15 minutos, un fin de semana", effective: 100, protected: false },
-        { label: "En la fábrica: 8 horas, todos los días laborales", effective: 100, protected: false },
-        { label: "Ambas son exactamente el mismo riesgo", effective: 100, protected: false },
+        { label: "En casa: 15 minutos, un fin de semana", effective: 100, protected: false, role: "casa" },
+        { label: "En la fábrica: 8 horas, todos los días laborales", effective: 100, protected: false, role: "obrero" },
+        { label: "Ambas son exactamente el mismo riesgo", effective: 100, protected: false, role: "obrero" },
       ], correct: 1, explain: "El nivel en dB es el mismo, pero el riesgo depende del TIEMPO acumulado de exposición. 8 horas diarias, todos los días, es un riesgo muchísimo mayor que 15 minutos esporádicos — por eso en la fábrica la protección es obligatoria, no opcional." },
     { type: "aging", q: "Tres operarios de la misma línea de producción de neumáticos, distinta antigüedad, todos sin protección constante. ¿Cuál tiene más riesgo de pérdida auditiva permanente?",
       people: [
@@ -604,6 +604,32 @@ function playAlerta() {
         { label: "12 años en la línea, protección \"cuando se acuerda\"", years: 12, damage: 60 },
         { label: "25 años en la línea, sin protección desde siempre", years: 25, damage: 88 },
       ], correct: 2, explain: "25 años de exposición sin protección constante es el escenario de mayor daño acumulado — y es exactamente el tipo de antigüedad que puede tener un operario en una planta industrial. Por eso la protección tiene que ser un hábito desde el primer día, no algo que se adopta después." },
+      ], explain: "Solo los tapones y las orejeras certificadas atenúan de forma real. El algodón casi no reduce decibeles, y los auriculares de música no están diseñados para atenuar ruido ambiente." },
+
+    { type: "order", q: "Ordená estos elementos de protección de MENOR a MAYOR atenuación real (tocalos en orden).",
+      items: [
+        { label: "Orejeras", db: 22 },
+        { label: "Tapones de espuma", db: 25 },
+        { label: "Tapones moldeados", db: 28 },
+        { label: "Doble protección", db: 32 },
+      ], explain: "Así lo mide este mismo simulador: orejeras 22 dB, espuma 25 dB, moldeados 28 dB y doble protección 32 dB — combinar suma atenuación." },
+
+    { type: "scenario", q: "Misma extrusora, 102 dB. Tres formas de encararla. ¿Cuál deja al trabajador con MENOS riesgo?",
+      scenarios: [
+        { label: "Sin protección", effective: 102, protected: false, role: "obrero" },
+        { label: "Con tapones de espuma (-25 dB)", effective: 77, protected: true, role: "obrero" },
+        { label: "Con doble protección (-32 dB)", effective: 70, protected: true, role: "obrero" },
+      ], correct: 2, explain: "Ambas protecciones bajan el riesgo a zona segura, pero la doble protección deja el nivel efectivo más bajo de las tres." },
+
+    { type: "aging", q: "Tres plantas con el mismo nivel de ruido, 15 años de operación. ¿Cuál va a tener MÁS problemas de audición entre su personal?",
+      people: [
+        { label: "Planta A: protección obligatoria y controlada", years: 15, damage: 12 },
+        { label: "Planta B: protección disponible, pero no controlada", years: 15, damage: 45 },
+        { label: "Planta C: sin protección provista", years: 15, damage: 80 },
+      ], correct: 2, explain: "Proveer protección no alcanza si no se controla el uso real. La política que menos daño genera es la que se cumple todos los días, como en la Planta A." },
+
+    { type: "mcq", q: "Según los valores de este simulador, ¿cuál protección atenúa MÁS por sí sola (sin combinar)?", options: ["Tapones de espuma (25 dB)", "Orejeras (22 dB)", "Tapones moldeados (28 dB)", "Todas atenúan igual"], correct: 2, explain: "En este simulador, los tapones moldeados son los de mayor atenuación individual: 28 dB." },
+    { type: "mcq", q: "Trabajás con una amoladora a 115 dB y te tapás una oreja con la mano. ¿Cuánto baja realmente el riesgo?", options: ["Baja mucho, es casi como usar protección real", "Casi nada: la mano no sella ni atenúa como un EPP certificado", "El riesgo sube", "Depende de qué mano uses"], correct: 1, explain: "La mano no forma un sello acústico ni atenúa de forma medible. Es un mito común: solo un EPP certificado reduce el riesgo de verdad." },
   ];
 
   const TOTAL_QUESTIONS = 9;
