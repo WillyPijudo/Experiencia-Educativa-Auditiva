@@ -1461,6 +1461,10 @@ function playAlerta() {
   const keyImgFallback = document.getElementById("keyInfoImgFallback");
   const keyTitle = document.getElementById("keyInfoTitle");
   const keyText = document.getElementById("keyInfoText");
+  const videoStage = document.getElementById("videoStage");
+  const keyTag = document.getElementById("keyInfoTag");
+  const keyTip = document.getElementById("keyInfoTip");
+  const keyTipText = document.getElementById("keyInfoTipText");
   if (!video) return;
 
   const VIDEO_SRC = { 1: "video/videoedu1.mp4", 2: "video/videoedu2.mp4" };
@@ -1517,30 +1521,37 @@ function playAlerta() {
       title: "Células ciliadas",
       img: "img/celulas-ciliadas.jpg",
       fallback: "🧬",
+      cat: "riesgo",
       text: "Son las que traducen el sonido en señales para el cerebro, adentro de la cóclea. El cuerpo nace con una cantidad fija: cuando el ruido las daña, no vuelven a crecer nunca más. Cada exposición sin protección es, literalmente, gastar una reserva que no se recarga.",
+      tip: "Una vez perdidas, no existe cirugía, aparato ni tratamiento que las regenere.",
     },
     tinnitus: {
       title: "Tinnitus (zumbido constante)",
       img: "img/tinnitus.jpg",
       fallback: "🔔",
+      cat: "riesgo",
       text: "Es un pitido o zumbido que se escucha aunque no haya ningún sonido real. Suele aparecer después de exposiciones fuertes y, en muchos casos, se queda para siempre: no hay una cura garantizada. Puede afectar el sueño, la concentración y el humor día a día.",
     },
     dano_irreversible: {
       title: "Daño irreversible",
       img: "img/dano-auditivo.jpg",
       fallback: "⚠️",
+      cat: "riesgo",
       text: "A diferencia de un corte o un moretón, el daño en el oído interno no cicatriza. Una vez perdida, esa audición no vuelve — por eso la única estrategia que funciona es prevenir antes, no tratar después.",
     },
     proteccion: {
       title: "Protección auditiva",
       img: "img/proteccion-auditiva.jpg",
       fallback: "🎧",
+      cat: "cuidado",
       text: "Tapones de espuma, moldeados u orejeras: cualquiera de estas opciones reduce muchísimo el riesgo, y combinadas (doble protección) todavía más. Es un segundo de esfuerzo hoy a cambio de seguir escuchando bien dentro de 20 años.",
+      tip: "Dejá un par de tapones en tu mochila o en tu puesto de trabajo, así siempre los tenés a mano.",
     },
     estres: {
       title: "Estrés por ruido",
       img: "img/estres-ruido.jpg",
       fallback: "😣",
+      cat: "riesgo",
       text: "El ruido constante no solo daña el oído: también sube el cansancio, la irritabilidad y baja la concentración en la tarea. Trabajar más silencioso (o bien protegido) es trabajar más seguro, en más de un sentido.",
     },
   };
@@ -1582,6 +1593,8 @@ function playAlerta() {
     subWordsEl[part].querySelectorAll(".sub-word").forEach((s) => {
       s.classList.remove("sub-shown", "sub-active");
     });
+    const p = document.getElementById(`subProgress${part}`);
+    if (p) p.style.width = "0%";
   }
 
   // ---- Libro de subtítulos: flip + swipe + puntitos ----
@@ -1615,6 +1628,14 @@ function playAlerta() {
     keyTitle.textContent = info.title;
     keyText.textContent = info.text;
     keyImgFallback.textContent = info.fallback;
+    keyCard.classList.toggle("key-info-cuidado", info.cat === "cuidado");
+    if (keyTag) keyTag.textContent = info.cat === "cuidado" ? "🛡 Se puede prevenir" : "⚠ Riesgo real";
+    if (info.tip) {
+      keyTipText.textContent = info.tip;
+      keyTip.hidden = false;
+    } else {
+      keyTip.hidden = true;
+    }
     keyImg.removeAttribute("src");
     keyImg.style.display = "none";
     keyImgFallback.style.display = "flex";
@@ -1660,16 +1681,16 @@ function playAlerta() {
   }
   window.stopCortos = stopAll;
 
-  function switchClip(n) {
-    video.pause();
+  video.addEventListener("ended", () => {
     playBtn.classList.remove("is-playing");
-    currentClip = n;
-    clipTabs.forEach((b) => b.classList.toggle("active", Number(b.dataset.clip) === n));
-    videoSource.src = VIDEO_SRC[n];
-    video.load();
-    progressFill.style.width = "0%";
-    jumpCta.hidden = true;
-  }
+    if (currentClip === 1) {
+      videoStage.classList.add("story-video-ended");
+      jumpCta.hidden = false;
+      jumpCta.style.animation = "none";
+      void jumpCta.offsetWidth;
+      jumpCta.style.animation = "";
+    }
+  });
   clipTabs.forEach((btn) => {
     btn.addEventListener("click", () => switchClip(Number(btn.dataset.clip)));
   });
@@ -1739,22 +1760,23 @@ function playAlerta() {
 
   [1, 2].forEach((part) => {
     const audio = narrAudio[part];
+    const progressEl = document.getElementById(`subProgress${part}`);
     audio.addEventListener("timeupdate", () => {
       const spans = subWordsEl[part].querySelectorAll(".sub-word");
       let activeSpan = null;
+      let shownCount = 0;
       spans.forEach((span) => {
         const start = Number(span.dataset.start);
         if (start <= audio.currentTime) {
           span.classList.add("sub-shown");
           activeSpan = span;
+          shownCount++;
         } else {
           span.classList.remove("sub-shown");
         }
         span.classList.remove("sub-active");
       });
       if (activeSpan) activeSpan.classList.add("sub-active");
+      if (progressEl) progressEl.style.width = `${(shownCount / spans.length) * 100}%`;
     });
   });
-
-  goToPage(1, { silent: true });
-})();
