@@ -101,15 +101,19 @@
     <span class="quick-stat-value" id="quickRiskLabel">SEGURO</span>
     <span class="quick-stat-tag">riesgo actual</span>
   </div>
+  <div class="quick-stat">
+    <span class="quick-stat-value" id="effectiveDb">70 dB</span>
+    <span class="quick-stat-tag">nivel efectivo</span>
+  </div>
   <div class="quick-stat quick-stat-time">
-    <span class="quick-stat-value" id="quickSafeTime">Toda la jornada</span>
     <span class="quick-stat-tag">tiempo seguro sin daño</span>
+    <span class="quick-stat-value" id="safeTime">Toda la jornada</span>
   </div>
 </div>
 <div class="safe-time-bar" aria-hidden="true">
   <div class="safe-time-fill" id="safeTimeFill"></div>
 </div>
-<p class="safe-time-caption">La barra representa una jornada de 8 horas. Se vacía más rápido cuanto más alto el nivel.</p>        
+<p class="safe-time-caption">La barra representa una jornada de 8 horas. Se vacía más rápido cuanto más alto el nivel.</p>  
 <div class="db-refs" id="dbRefs">
   <button type="button" class="db-ref" data-db="45">
     <svg class="ref-icon ref-icon-office" viewBox="0 0 32 32" aria-hidden="true">
@@ -194,16 +198,7 @@
         </div>
       </div>
 
-      <div class="readout-grid">
-        <div class="readout-card">
-          <span class="readout-label">Nivel efectivo</span>
-          <span class="readout-value" id="effectiveDb">70 dB</span>
-        </div>
-        <div class="readout-card">
-          <span class="readout-label">Tiempo seguro</span>
-          <span class="readout-value" id="safeTime">8 h</span>
-        </div>
-      </div>
+
       <p class="readout-note" id="readoutNote">Con este nivel podés trabajar la jornada completa sin riesgo.</p>
     </section>
 
