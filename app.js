@@ -643,35 +643,35 @@ function playAlerta() {
   }
 
   function renderTrueFalse(item) {
-    const scale = document.createElement("div");
-    scale.className = "tf-scale";
-    scale.innerHTML = `
-      <div class="tf-scale-pan"></div>
-      <div class="tf-scale-post"></div>
-      <div class="tf-scale-pan tf-pan-b"></div>`;
-    optionsEl.appendChild(scale);
+    const duel = document.createElement("div");
+    duel.className = "tf-duel";
+    duel.innerHTML = `
+      <button type="button" class="tf-card tf-card-true">
+        <span class="tf-card-icon">✔</span>
+        <span class="tf-card-label">Verdadero</span>
+      </button>
+      <span class="tf-vs">VS</span>
+      <button type="button" class="tf-card tf-card-false">
+        <span class="tf-card-icon">✖</span>
+        <span class="tf-card-label">Falso</span>
+      </button>`;
+    optionsEl.appendChild(duel);
 
-    const row = document.createElement("div");
-    row.className = "tf-buttons";
-    const trueBtn = document.createElement("button");
-    trueBtn.type = "button";
-    trueBtn.className = "tf-btn tf-btn-true";
-    trueBtn.textContent = "Verdadero";
-    const falseBtn = document.createElement("button");
-    falseBtn.type = "button";
-    falseBtn.className = "tf-btn tf-btn-false";
-    falseBtn.textContent = "Falso";
-    row.appendChild(trueBtn);
-    row.appendChild(falseBtn);
-    optionsEl.appendChild(row);
+    const trueBtn = duel.querySelector(".tf-card-true");
+    const falseBtn = duel.querySelector(".tf-card-false");
 
     function pick(value, btn) {
       if (answered) return;
       trueBtn.disabled = true;
       falseBtn.disabled = true;
       const correctBtn = item.answer ? trueBtn : falseBtn;
-      correctBtn.classList.add("quiz-correct");
-      if (btn !== correctBtn) btn.classList.add("quiz-incorrect");
+      const wrongBtn = item.answer ? falseBtn : trueBtn;
+      correctBtn.classList.add("tf-card-correct");
+      if (btn !== correctBtn) {
+        btn.classList.add("tf-card-incorrect");
+      } else {
+        wrongBtn.classList.add("tf-card-dim");
+      }
       completeQuestion(value === item.answer, item.explain);
     }
     trueBtn.addEventListener("click", () => pick(true, trueBtn));
@@ -768,13 +768,13 @@ function playAlerta() {
       card.className = "scenario-card";
       const color = riskColor(sc.effective);
       const muffs = sc.protected
-        ? '<rect x="8" y="9" width="13" height="17" rx="5" class="figure-muff"/><rect x="39" y="9" width="13" height="17" rx="5" class="figure-muff"/>'
+        ? '<rect x="7" y="26" width="12" height="16" rx="5" class="figure-muff"/><rect x="41" y="26" width="12" height="16" rx="5" class="figure-muff"/><path d="M13 26 C13 14 21 8 30 8 C39 8 47 14 47 26" class="figure-muff-band"/>'
         : "";
       card.innerHTML = `
         <span class="scenario-risk-dot" style="background:${color}; color:${color};"></span>
-        <svg viewBox="0 0 60 90" class="scenario-figure-svg" aria-hidden="true">
-          <circle cx="30" cy="18" r="14" class="figure-head"/>
-          <rect x="14" y="34" width="32" height="46" rx="14" class="figure-body"/>
+        <svg viewBox="0 0 60 100" class="scenario-figure-svg" style="color:${color};" aria-hidden="true">
+          <circle cx="30" cy="17" r="13" class="figure-head"/>
+          <path d="M30 32 C15 32 9 46 9 62 L9 80 C9 86 14 90 20 90 L20 97 L28 97 L28 90 L32 90 L32 97 L40 97 L40 90 C46 90 51 86 51 80 L51 62 C51 46 45 32 30 32 Z" class="figure-body"/>
           ${muffs}
         </svg>
         <span class="scenario-label">${sc.label}</span>

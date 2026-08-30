@@ -817,44 +817,79 @@ body::before {
 .quiz-option.quiz-correct .quiz-option-letter { border-color: var(--mint); color: var(--mint); }
 .quiz-option.quiz-incorrect .quiz-option-letter { border-color: var(--signal); color: var(--signal); }
 
-/* ---- Mecánica: Verdadero / Falso, con balanza animada ---- */
-.tf-scale {
-  display: flex; align-items: flex-end; justify-content: center;
-  gap: 26px;
-  height: 46px;
-  margin-bottom: 18px;
+/* ---- Mecánica: Verdadero / Falso, como duelo de dos cartas grandes ---- */
+.tf-duel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
 }
-.tf-scale-post { width: 3px; height: 100%; background: var(--border); border-radius: 2px; }
-.tf-scale-pan {
-  width: 30px; height: 18px;
-  border: 2px solid var(--hologram);
-  border-top: none;
-  border-radius: 0 0 14px 14px;
-  opacity: 0.6;
-  animation: tf-sway 2.6s ease-in-out infinite;
-}
-.tf-scale-pan.tf-pan-b { animation-delay: 1.3s; }
-@keyframes tf-sway {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
-}
-.tf-buttons { display: flex; gap: 10px; }
-.tf-btn {
+.tf-card {
   flex: 1;
-  padding: 16px 8px;
-  border-radius: 14px;
-  border: 1px solid var(--border);
-  background: var(--ink-3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 22px 10px;
+  min-height: 108px;
+  border-radius: 20px;
+  border: 1.5px solid var(--border);
+  background: linear-gradient(160deg, var(--ink-3), var(--ink-2));
   color: var(--paper);
   font-family: var(--font-fun);
-  font-size: 15px;
-  transition: transform 0.15s ease, border-color 0.2s ease, background 0.2s ease;
+  transition: transform 0.15s ease, border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+  animation: tf-card-float 3.2s ease-in-out infinite;
 }
-.tf-btn:active { transform: scale(0.95); }
-.tf-btn-true { border-color: rgba(52,224,161,0.35); }
-.tf-btn-false { border-color: rgba(255,92,122,0.35); }
-.tf-btn.quiz-correct { border-color: var(--mint); background: rgba(52,224,161,0.12); color: var(--mint); }
-.tf-btn.quiz-incorrect { border-color: var(--signal); background: rgba(255,92,122,0.12); color: var(--signal); }
+.tf-card-false { animation-delay: 0.4s; }
+@keyframes tf-card-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+.tf-card-icon {
+  width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  font-size: 19px;
+  flex-shrink: 0;
+}
+.tf-card-true { border-color: rgba(52,224,161,0.3); }
+.tf-card-true .tf-card-icon { background: rgba(52,224,161,0.14); color: var(--mint); border: 1.5px solid rgba(52,224,161,0.4); }
+.tf-card-false { border-color: rgba(255,92,122,0.3); }
+.tf-card-false .tf-card-icon { background: rgba(255,92,122,0.14); color: var(--signal); border: 1.5px solid rgba(255,92,122,0.4); }
+.tf-card-label { font-size: 15px; letter-spacing: 0.3px; }
+.tf-card:active { transform: scale(0.94); animation-play-state: paused; }
+.tf-vs {
+  flex-shrink: 0;
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: var(--mist);
+  opacity: 0.7;
+}
+.tf-card.tf-card-correct {
+  animation: none;
+  transform: scale(1.04);
+  border-color: var(--mint);
+  background: linear-gradient(160deg, rgba(52,224,161,0.18), var(--ink-2));
+  box-shadow: 0 0 22px rgba(52,224,161,0.25);
+}
+.tf-card.tf-card-correct .tf-card-label { color: var(--mint); }
+.tf-card.tf-card-incorrect {
+  animation: tf-shake 0.4s ease;
+  border-color: var(--signal);
+  background: linear-gradient(160deg, rgba(255,92,122,0.16), var(--ink-2));
+}
+.tf-card.tf-card-incorrect .tf-card-label { color: var(--signal); }
+.tf-card.tf-card-dim { opacity: 0.4; animation: none; }
+@keyframes tf-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tf-card { animation: none; }
+}
 
 /* ---- Mecánica: ordenar de más silencioso a más ruidoso ---- */
 .order-pool { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
@@ -1022,7 +1057,7 @@ body::before {
 
 
 
-.ear-photo-stage { position: relative; width: 100%; max-width: 134px; margin: 0 auto 46px; aspect-ratio: 1 / 1.2; }
+.ear-photo-stage { position: relative; width: 100%; max-width: 152px; margin: 0 auto 46px; aspect-ratio: 1 / 1.2; }
 
 /* Halo ambiental detrás del oído: respira con el color de riesgo actual */
 .ear-photo-stage::before {
@@ -1095,101 +1130,39 @@ body::before {
   50% { height: calc(var(--peak, 14px) * var(--amp-mult, 0.8)); opacity: 0.95; }
 }
 
-/* ============ OÍDO DIBUJADO EN CSS ============ */
+/* ============ OÍDO — foto real (img/ear.png, 434×650 recortada) ============ */
 .ear-css {
   position: absolute;
   left: 50%; top: 47%;
   transform: translate(-50%, -50%);
-  width: 62%;
-  height: 84%;
+  width: 96px;
+  height: 144px;
   z-index: 2;
-  filter: drop-shadow(0 10px 16px rgba(0, 0, 0, 0.5));
 }
-
-.ear-pinna {
+.ear-photo-img {
   position: absolute;
   inset: 0;
-  border-radius: 46% 54% 54% 46% / 58% 58% 42% 42%;
-  background: linear-gradient(150deg, #fbe4c4 0%, #f0c090 32%, #dea16c 62%, #b87849 88%, #9c6038 100%);
-  box-shadow:
-    inset -12px -14px 20px rgba(110, 58, 28, 0.45),
-    inset 10px 12px 18px rgba(255, 245, 230, 0.6),
-    inset 0 0 0 1px rgba(255, 235, 210, 0.15),
-    0 12px 26px rgba(0, 0, 0, 0.45);
-}
-.ear-pinna::before {
-  content: "";
-  position: absolute;
-  left: 14%; top: 8%;
-  width: 34%; height: 26%;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.55), transparent 72%);
-  filter: blur(1px);
-  pointer-events: none;
-}
-.ear-pinna::after {
-  content: "";
-  position: absolute;
-  right: 4%; bottom: 6%;
-  width: 44%; height: 34%;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(90, 46, 20, 0.4), transparent 70%);
-  pointer-events: none;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 14px rgba(0, 0, 0, 0.5));
+  -webkit-user-drag: none;
 }
 
-.ear-helix {
-  position: absolute;
-  left: 12%; top: 8%;
-  width: 64%; height: 68%;
-  border-radius: 50% 50% 50% 18% / 58% 58% 42% 42%;
-  border: 3px solid rgba(255, 238, 218, 0.45);
-  border-right-color: transparent;
-  border-bottom-color: transparent;
-  box-shadow: -1px -1px 3px rgba(120, 66, 34, 0.35);
-}
-
-.ear-concha {
-  position: absolute;
-  right: 10%; top: 34%;
-  width: 46%; height: 40%;
-  border-radius: 50% 40% 55% 45%;
-  background: radial-gradient(circle at 38% 32%, rgba(255, 238, 218, 0.4), rgba(160, 92, 48, 0.35) 55%, rgba(90, 48, 22, 0.5) 78%);
-  box-shadow: inset 3px 4px 10px rgba(80, 42, 18, 0.5), inset -2px -3px 6px rgba(255, 235, 210, 0.2);
-}
-
-.ear-canal {
-  position: absolute;
-  right: 4%; top: 44%;
-  width: 32%; height: 24%;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 32%, #6b4227, #2c150c 72%, #150a06 100%);
-  box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.75), inset 0 -2px 3px rgba(255, 200, 150, 0.12);
-}
-
+/* Punto que representa el tímpano latiendo, ubicado sobre la entrada del canal en la foto */
 .ear-drum {
   position: absolute;
-  right: 12%; top: 51%;
+  left: 40%; top: 47%;
   width: 7px; height: 7px;
   border-radius: 50%;
   background: radial-gradient(circle at 35% 30%, #fff, var(--wave-color, var(--mint)) 60%);
   box-shadow: 0 0 9px 3px var(--wave-color, var(--mint));
   animation: drum-pulse var(--wave-speed, 1.8s) ease-in-out infinite;
+  z-index: 3;
 }
 @keyframes drum-pulse {
   0%, 100% { transform: scale(0.8); opacity: 0.65; }
   50% { transform: scale(1.18); opacity: 1; }
-}
-
-.ear-lobe {
-  position: absolute;
-  left: 14%; bottom: -8%;
-  width: 32%; height: 26%;
-  border-radius: 50%;
-  background: linear-gradient(160deg, #fbe6c8 0%, #e2ac78 55%, #c1885a 100%);
-  box-shadow:
-    inset -4px -5px 9px rgba(120, 66, 34, 0.35),
-    inset 3px 3px 6px rgba(255, 245, 230, 0.4),
-    0 6px 12px rgba(0, 0, 0, 0.35);
 }
 
 /* ============ EQUIPO DE PROTECCIÓN SOBRE EL OÍDO ============ */
@@ -1197,8 +1170,8 @@ body::before {
 /* Banda superior tipo diadema, con relleno acolchado y costura */
 .protect-band {
   position: absolute;
-  left: -12%; right: -46%; top: -22%;
-  height: 16px;
+  left: -14%; right: -14%; top: -20%;
+  height: 14px;
   border-radius: 50% 50% 6px 6px / 100% 100% 6px 6px;
   background: linear-gradient(180deg, #5a6478 0%, #333a4c 55%, #14171f 100%);
   box-shadow:
@@ -1210,7 +1183,7 @@ body::before {
   transform-origin: center top;
   transition: opacity 0.3s ease, transform 0.3s ease;
   pointer-events: none;
-  z-index: 3;
+  z-index: 4;
 }
 .protect-band.active { opacity: 1; transform: translateY(0) scaleX(1); }
 .protect-band::after {
@@ -1221,11 +1194,11 @@ body::before {
   transform: translateY(-50%);
 }
 
-/* Orejera: copa acolchada, con cojín, remache y brillo — mucho más volumen */
+/* Orejera: copa acolchada centrada sobre el canal auditivo de la foto */
 .protect-earmuff {
   position: absolute;
-  right: -30%; top: 16%;
-  width: 74%; height: 64%;
+  left: 12%; top: 30%;
+  width: 62%; height: 46%;
   border-radius: 46% 54% 56% 44% / 54% 54% 46% 46%;
   background: linear-gradient(150deg, #626d84 0%, #3a4256 45%, #1a1e2a 100%);
   border: 3px solid #0b0d13;
@@ -1236,10 +1209,10 @@ body::before {
     inset 6px 6px 12px rgba(255, 255, 255, 0.08);
   opacity: 0;
   transform: scale(0.6) rotate(-6deg);
-  transform-origin: 30% 50%;
+  transform-origin: 40% 50%;
   transition: opacity 0.3s ease, transform 0.3s ease;
   pointer-events: none;
-  z-index: 4;
+  z-index: 5;
 }
 .protect-earmuff.active { opacity: 1; transform: scale(1) rotate(-6deg); }
 
@@ -1274,17 +1247,17 @@ body::before {
   z-index: 1;
 }
 
-/* Tapón de espuma: forma cónica con ridges (líneas de compresión) */
+/* Tapón de espuma: forma cónica con ridges (líneas de compresión), sobre el canal */
 .protect-plug {
   position: absolute;
-  right: 15%; top: 44%;
-  width: 20px; height: 26px;
+  left: 35%; top: 40%;
+  width: 18px; height: 24px;
   opacity: 0;
   transform: scale(0.4);
   transform-origin: 50% 80%;
   transition: opacity 0.25s ease, transform 0.25s ease;
   pointer-events: none;
-  z-index: 2;
+  z-index: 4;
 }
 .protect-plug.active { opacity: 1; transform: scale(1); }
 
@@ -1403,22 +1376,27 @@ body::before {
 }
 .menu-page-btn:active { border-color: var(--hologram); color: var(--hologram); }
 
-/* ---- Quiz: comparar escenarios (figuras) ---- */
+/* ---- Quiz: comparar escenarios (figuras vectoriales tipo pictograma) ---- */
 .scenario-grid { display: flex; flex-direction: column; gap: 10px; }
 .scenario-card {
   display: flex; align-items: center; gap: 14px;
   background: var(--ink-3); border: 1px solid var(--border);
   border-radius: 14px; padding: 12px 14px; text-align: left;
   color: var(--paper); width: 100%;
+  transition: transform 0.15s ease, border-color 0.2s ease, background 0.2s ease;
 }
-.scenario-card:active { border-color: var(--hologram); }
+.scenario-card:active { border-color: var(--hologram); transform: scale(0.98); }
 .scenario-card.quiz-correct { border-color: var(--mint); background: rgba(52,224,161,0.12); }
 .scenario-card.quiz-incorrect { border-color: var(--signal); background: rgba(255,92,122,0.12); }
 .scenario-risk-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 8px 1px currentColor; }
-.scenario-figure-svg { width: 40px; height: 60px; flex-shrink: 0; }
-.figure-head { fill: var(--mist); }
-.figure-body { fill: var(--ink-2); stroke: var(--mist); stroke-width: 1.5; }
-.figure-muff { fill: var(--hologram); opacity: 0.85; }
+.scenario-figure-svg {
+  width: 40px; height: 66px; flex-shrink: 0;
+  filter: drop-shadow(0 3px 6px rgba(0,0,0,0.35));
+}
+.figure-head { fill: currentColor; opacity: 0.95; }
+.figure-body { fill: currentColor; opacity: 0.85; }
+.figure-muff { fill: var(--ink); stroke: currentColor; stroke-width: 1.5; }
+.figure-muff-band { fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; }
 .scenario-label { flex: 1; font-size: 13.5px; }
 .scenario-db { font-family: var(--font-mono); font-size: 11px; white-space: nowrap; }
 
@@ -1567,7 +1545,7 @@ p, .hero-sub, .stat-text, .tool-desc, .epp-card p, .readout-note, .cilia-note, .
   animation: shimmer-sweep 1.8s ease-in-out infinite;
 }
 @keyframes shimmer-sweep { 0% { transform: translateX(-100%); } 100% { transform: translateX(350%); } }
-.safe-time-caption { font-family: var(--font-mono); font-size: 10.5px; color: var(--mist); margin-bottom: 16px; }
+.safe-time-caption { font-family: var(--font-mono); font-size: 12px; line-height: 1.5; color: var(--mist); margin-bottom: 16px; }
 
 @media (prefers-reduced-motion: reduce) {
   .quick-stat-dot, .safe-time-fill::after { animation: none; }
@@ -1769,11 +1747,37 @@ p, .hero-sub, .stat-text, .tool-desc, .epp-card p, .readout-note, .cilia-note, .
 .narrate-btn-icon { display: inline-block; transition: transform 0.2s ease; }
 .narrate-btn.is-narrating .narrate-btn-icon { transform: scale(1.15); }
 .sub-swipe-hint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px 8px;
   text-align: center;
-  font-size: 11px;
-  color: var(--mist);
-  margin: 0 0 14px;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  letter-spacing: 0.2px;
+  color: var(--hologram);
+  background: rgba(79, 214, 255, 0.08);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 11px 18px;
+  margin: 0 0 16px;
   line-height: 1.4;
+  animation: hint-glow 2.6s ease-in-out infinite;
+}
+.hint-sep { color: var(--mist); opacity: 0.6; }
+.hint-icon { display: inline-block; font-size: 14px; }
+.hint-icon-swipe { animation: hint-swipe 1.5s ease-in-out infinite; }
+@keyframes hint-swipe {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(4px); }
+}
+@keyframes hint-glow {
+  0%, 100% { box-shadow: 0 0 0 rgba(79,214,255,0); }
+  50% { box-shadow: 0 0 16px rgba(79,214,255,0.22); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sub-swipe-hint, .hint-icon-swipe { animation: none; }
 }
 
 /* ---- Libro de subtítulos: dos caras, se da vuelta como una página ---- */
