@@ -239,6 +239,18 @@ function playAlerta() {
     return (1.8 - intensity * 1.4).toFixed(2);
   }
 
+  // Mapea el dB efectivo a un ángulo dentro del arco de colores del track (0-216° tras el offset de -108°),
+  // así el marcador cae siempre en la franja de color que corresponde a su nivel real.
+  const vizMarker = document.getElementById("vizMarker");
+  function markerAngle(effectiveDb) {
+    const db = Math.max(40, Math.min(140, effectiveDb));
+    let sweep;
+    if (db <= 85) sweep = ((db - 40) / (85 - 40)) * 130;
+    else if (db <= 105) sweep = 130 + ((db - 85) / (105 - 85)) * 65;
+    else sweep = 195 + ((db - 105) / (140 - 105)) * 21;
+    return -108 + sweep;
+  }
+
   function applyProtectionVisual(kind) {
     const showMuff = kind === "orejeras" || kind === "doble";
     const showFoam = kind === "espuma" || kind === "doble";
@@ -309,6 +321,7 @@ function playAlerta() {
     earStageEl.style.setProperty("--wave-speed", `${speed}s`);
     earStageEl.style.setProperty("--wave-max", (2.4 + intensity * 1.8).toFixed(2));
     earStageEl.style.setProperty("--amp-mult", (0.55 + intensity * 1.1).toFixed(2));
+    if (vizMarker) vizMarker.style.setProperty("--marker-angle", `${markerAngle(effectiveDb)}deg`);
 
     if (risk.key === "danger" && !wasDanger) {
       if (navigator.vibrate) navigator.vibrate([40, 60, 40]);
@@ -476,12 +489,37 @@ function playAlerta() {
     scenario: "Comparar escenarios",
     timeline: "Línea de tiempo",
     aging: "Comparar exposición",
+    multiselect: "Selección múltiple",
   };
 
   function riskColor(effectiveDb) {
     if (effectiveDb <= 85) return "var(--mint)";
     if (effectiveDb <= 105) return "var(--hologram)";
     return "var(--signal)";
+  }
+
+  // Silueta vectorial de persona (cabeza + cuerpo), vestida según su rol:
+  // "obrero" -> casco de seguridad · "oficina" -> corbata y cuello · "casa" -> sin accesorio.
+  // muffs=true agrega orejeras encima, para representar protección puesta.
+  function personFigureSvg(role, muffsOn, color) {
+    const HEAD = '<circle cx="30" cy="17" r="13" class="figure-head"/>';
+    const BODY = '<path d="M30 32 C15 32 9 46 9 62 L9 80 C9 86 14 90 20 90 L20 97 L28 97 L28 90 L32 90 L32 97 L40 97 L40 90 C46 90 51 86 51 80 L51 62 C51 46 45 32 30 32 Z" class="figure-body"/>';
+    let accessory = "";
+    if (role === "obrero") {
+      accessory = `
+        <path d="M13 8 C13 -2 47 -2 47 8 L49 12 L11 12 Z" class="figure-hardhat"/>
+        <rect x="9" y="10" width="42" height="4" rx="2" class="figure-hardhat-brim"/>`;
+    } else if (role === "oficina") {
+      accessory = `
+        <path d="M24 32 L30 44 L36 32 L33 30 L27 30 Z" class="figure-tie"/>
+        <path d="M22 30 L30 38 L38 30 L34 26 L26 26 Z" class="figure-collar"/>`;
+    }
+    const muffs = muffsOn
+      ? '<rect x="7" y="26" width="12" height="16" rx="5" class="figure-muff"/><rect x="41" y="26" width="12" height="16" rx="5" class="figure-muff"/><path d="M13 26 C13 14 21 8 30 8 C39 8 47 14 47 26" class="figure-muff-band"/>'
+      : "";
+    return `<svg viewBox="0 0 60 100" class="scenario-figure-svg" style="color:${color};" aria-hidden="true">
+      ${HEAD}${BODY}${accessory}${muffs}
+    </svg>`;
   }
 
   // ---- Banco de preguntas (se arma un test nuevo y random cada vez) ----
@@ -568,7 +606,7 @@ function playAlerta() {
       ], correct: 2, explain: "25 años de exposición sin protección constante es el escenario de mayor daño acumulado — y es exactamente el tipo de antigüedad que puede tener un operario en una planta industrial. Por eso la protección tiene que ser un hábito desde el primer día, no algo que se adopta después." },
   ];
 
-  const TOTAL_QUESTIONS = 8;
+  const TOTAL_QUESTIONS = 9;
   let QUESTIONS = [];
   let current = 0;
   let score = 0;
@@ -583,7 +621,8 @@ function playAlerta() {
       ...byType("scenario").slice(0, 1),
       ...byType("timeline").slice(0, 1),
       ...byType("aging").slice(0, 1),
-      ...byType("mcq").slice(0, TOTAL_QUESTIONS - 7),
+      ...byType("multiselect").slice(0, 1),
+      ...byType("mcq").slice(0, TOTAL_QUESTIONS - 8),
     ];
     return shuffle(picked).map((item) => {
       if (item.type === "mcq") {
@@ -767,16 +806,9 @@ function playAlerta() {
       card.type = "button";
       card.className = "scenario-card";
       const color = riskColor(sc.effective);
-      const muffs = sc.protected
-        ? '<rect x="7" y="26" width="12" height="16" rx="5" class="figure-muff"/><rect x="41" y="26" width="12" height="16" rx="5" class="figure-muff"/><path d="M13 26 C13 14 21 8 30 8 C39 8 47 14 47 26" class="figure-muff-band"/>'
-        : "";
       card.innerHTML = `
         <span class="scenario-risk-dot" style="background:${color}; color:${color};"></span>
-        <svg viewBox="0 0 60 100" class="scenario-figure-svg" style="color:${color};" aria-hidden="true">
-          <circle cx="30" cy="17" r="13" class="figure-head"/>
-          <path d="M30 32 C15 32 9 46 9 62 L9 80 C9 86 14 90 20 90 L20 97 L28 97 L28 90 L32 90 L32 97 L40 97 L40 90 C46 90 51 86 51 80 L51 62 C51 46 45 32 30 32 Z" class="figure-body"/>
-          ${muffs}
-        </svg>
+        ${personFigureSvg(sc.role || "casa", !!sc.protected, color)}
         <span class="scenario-label">${sc.label}</span>
         <span class="scenario-db" style="color:${color};">${sc.effective} dB efectivos</span>`;
       card.addEventListener("click", () => {
@@ -839,6 +871,49 @@ function playAlerta() {
     optionsEl.appendChild(viz);
   }
 
+  function renderMultiselect(item) {
+    const grid = document.createElement("div");
+    grid.className = "scenario-grid multiselect-grid";
+    const selected = new Set();
+
+    item.people.forEach((p, i) => {
+      const card = document.createElement("button");
+      card.type = "button";
+      card.className = "scenario-card multiselect-card";
+      card.innerHTML = `
+        <span class="multiselect-check" aria-hidden="true"></span>
+        ${personFigureSvg(p.role || "casa", false, "var(--mist)")}
+        <span class="scenario-label">${p.label}</span>`;
+      card.addEventListener("click", () => {
+        if (answered) return;
+        card.classList.toggle("multiselect-selected");
+        if (selected.has(i)) selected.delete(i); else selected.add(i);
+      });
+      grid.appendChild(card);
+    });
+    optionsEl.appendChild(grid);
+
+    const confirmBtn = document.createElement("button");
+    confirmBtn.type = "button";
+    confirmBtn.className = "cta-btn multiselect-confirm";
+    confirmBtn.textContent = "Confirmar selección";
+    confirmBtn.addEventListener("click", () => {
+      if (answered) return;
+      let isCorrect = true;
+      item.people.forEach((p, i) => {
+        const card = grid.children[i];
+        const wasPicked = selected.has(i);
+        if (wasPicked !== !!p.correct) isCorrect = false;
+        card.disabled = true;
+        if (p.correct) card.classList.add("quiz-correct");
+        else if (wasPicked) card.classList.add("quiz-incorrect");
+      });
+      completeQuestion(isCorrect, item.explain);
+    });
+    optionsEl.appendChild(confirmBtn);
+  }
+
+  
   function renderQuestion() {
     answered = false;
     feedbackEl.hidden = true;
@@ -860,6 +935,7 @@ function playAlerta() {
     else if (item.type === "scenario") renderScenario(item);
     else if (item.type === "aging") renderAging(item);
     else if (item.type === "timeline") { renderTimelineViz(); renderMCQ(item); }
+    else if (item.type === "multiselect") renderMultiselect(item);
   }
 
   function showResult() {
