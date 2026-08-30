@@ -1681,6 +1681,21 @@ function playAlerta() {
   }
   window.stopCortos = stopAll;
 
+  function switchClip(n) {
+    video.pause();
+    playBtn.classList.remove("is-playing");
+    videoStage.classList.remove("story-video-ended");
+    currentClip = n;
+    clipTabs.forEach((b) => b.classList.toggle("active", Number(b.dataset.clip) === n));
+    videoSource.src = VIDEO_SRC[n];
+    video.load();
+    progressFill.style.width = "0%";
+    jumpCta.hidden = true;
+  }
+  clipTabs.forEach((btn) => {
+    btn.addEventListener("click", () => switchClip(Number(btn.dataset.clip)));
+  });
+
   video.addEventListener("ended", () => {
     playBtn.classList.remove("is-playing");
     if (currentClip === 1) {
@@ -1690,9 +1705,6 @@ function playAlerta() {
       void jumpCta.offsetWidth;
       jumpCta.style.animation = "";
     }
-  });
-  clipTabs.forEach((btn) => {
-    btn.addEventListener("click", () => switchClip(Number(btn.dataset.clip)));
   });
 
   function togglePlay() {
@@ -1710,16 +1722,7 @@ function playAlerta() {
   video.addEventListener("timeupdate", () => {
     if (video.duration) progressFill.style.width = `${(video.currentTime / video.duration) * 100}%`;
   });
-  video.addEventListener("ended", () => {
-    playBtn.classList.remove("is-playing");
-    if (currentClip === 1) {
-      jumpCta.hidden = false;
-      // relanza la animación de entrada por si ya se había mostrado antes
-      jumpCta.style.animation = "none";
-      void jumpCta.offsetWidth;
-      jumpCta.style.animation = "";
-    }
-  });
+
 
   muteBtn.addEventListener("click", () => {
     video.muted = !video.muted;
