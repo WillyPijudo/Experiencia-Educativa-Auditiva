@@ -2086,3 +2086,134 @@ p, .hero-sub, .stat-text, .tool-desc, .epp-card p, .readout-note, .cilia-note, .
 
 .figure-cotton { fill: #f4f2ee; opacity: 0.92; filter: drop-shadow(0 0.5px 0.5px rgba(0,0,0,0.15)); }
 .figure-cotton-tuft { opacity: 0.75; }
+
+
+
+/* ============ Historia interactiva v2: minijuego "Un día en la vida de Tino" ============ */
+.story-phase { animation: story-fade-in 0.4s ease both; }
+@keyframes story-fade-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+/* --- Intro --- */
+.story-intro-card {
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+  background: var(--ink-2); border: 1px solid var(--border); border-radius: 18px;
+  padding: 22px 18px; margin-bottom: 16px;
+}
+.story-intro-figure { width: 110px; filter: drop-shadow(0 10px 16px rgba(0,0,0,0.4)); }
+.story-intro-text { font-size: 14px; line-height: 1.6; color: var(--mist); text-align: center; }
+
+/* --- Progreso tipo "stories" --- */
+.story-progress { display: flex; gap: 6px; margin-bottom: 14px; }
+.story-progress-dot { flex: 1; height: 4px; border-radius: 2px; background: var(--border); transition: background 0.3s ease; }
+.story-progress-dot.done { background: var(--mint); }
+.story-progress-dot.current { background: var(--hologram); box-shadow: 0 0 6px 1px var(--hologram); }
+
+/* --- Escenario --- */
+.story-scene {
+  position: relative;
+  border-radius: 18px;
+  overflow: hidden;
+  aspect-ratio: 300 / 190;
+  margin-bottom: 14px;
+  background: linear-gradient(160deg, #0d1420, #161f30);
+  border: 1px solid var(--border);
+}
+.story-bg { position: absolute; inset: 0; }
+.story-bg-svg { width: 100%; height: 100%; display: block; }
+.story-glow {
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at 30% 65%, var(--scene-color, var(--mint)) 0%, transparent 55%);
+  opacity: 0.22;
+  transition: background 0.4s ease;
+  pointer-events: none;
+}
+.story-character {
+  position: absolute; left: 14%; bottom: 4%;
+  width: 34%; max-width: 110px;
+  filter: drop-shadow(0 10px 14px rgba(0,0,0,0.5));
+  animation: figure-float 3.4s ease-in-out infinite;
+}
+
+/* Fondo: obra */
+.bg-floor { fill: #1c2434; }
+.bg-hazard { fill: #ffcf3f; opacity: 0.5; }
+.bg-machine { fill: #2a3448; stroke: rgba(79,214,255,0.35); stroke-width: 1.5; }
+.bg-machine-vent { fill: #4fd6ff; opacity: 0.45; }
+.bg-tire { fill: #10141c; stroke: #384258; stroke-width: 2; }
+.bg-tire-hub { fill: #4a5674; }
+
+/* Fondo: oficina */
+.bg-floor-office { fill: #1b2130; }
+.bg-window { fill: #223049; stroke: rgba(79,214,255,0.25); stroke-width: 1.5; }
+.bg-window-line { stroke: rgba(79,214,255,0.3); stroke-width: 1.5; }
+.bg-desk { fill: #2a3448; }
+.bg-monitor { fill: #0f1522; stroke: rgba(79,214,255,0.4); stroke-width: 1.5; }
+.bg-monitor-stand { fill: #384258; }
+
+/* Fondo: casa */
+.bg-floor-home { fill: #241a2c; }
+.bg-couch, .bg-couch-arm { fill: #3a2b52; }
+.bg-tv { fill: #0f1522; stroke: rgba(79,214,255,0.35); stroke-width: 1.5; }
+.bg-tv-stand { fill: #384258; }
+
+/* Fondo: tránsito */
+.bg-building { fill: #182034; }
+.bg-building-b { fill: #202a42; }
+.bg-road { fill: #10141c; }
+.bg-road-line { stroke: #ffcf3f; stroke-width: 2; stroke-dasharray: 10 8; }
+.bg-car-body { fill: var(--signal); }
+.bg-car-cabin { fill: #1b2436; opacity: 0.85; }
+.bg-car-wheel { fill: #10141c; stroke: #384258; stroke-width: 2; }
+.bg-car { animation: bg-car-bounce 1.6s ease-in-out infinite; }
+@keyframes bg-car-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-1.5px); } }
+
+/* --- Ventana de diálogo --- */
+.story-window {
+  background: var(--ink-2); border: 1px solid var(--border); border-radius: 16px;
+  padding: 16px; margin-bottom: 14px;
+}
+.story-window-top { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.story-tag {
+  font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.5px;
+  padding: 4px 10px; border-radius: 999px; background: var(--ink-3); color: var(--mist);
+}
+.story-voice-btn {
+  margin-left: auto; width: 34px; height: 34px; border-radius: 50%;
+  border: 1px solid var(--border); background: var(--ink-3); font-size: 15px;
+  transition: transform 0.15s ease, border-color 0.2s ease;
+}
+.story-voice-btn:active { transform: scale(0.9); border-color: var(--hologram); }
+.story-window-text { font-size: 14.5px; line-height: 1.6; color: var(--paper); }
+.story-feedback { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); font-size: 13px; line-height: 1.5; }
+.story-feedback-correct { color: var(--mint); }
+.story-feedback-neutral { color: var(--hologram); }
+.story-feedback-wrong { color: var(--signal); }
+
+/* --- Elección de protección --- */
+.story-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+.story-choice-btn {
+  padding: 12px 8px; border-radius: 12px; border: 1px solid var(--border);
+  background: var(--ink-2); color: var(--paper); font-family: var(--font-fun); font-size: 13px;
+  transition: transform 0.15s ease, border-color 0.2s ease, background 0.2s ease;
+}
+.story-choice-btn:active { transform: scale(0.96); }
+.story-choice-btn:disabled { opacity: 0.55; }
+.story-choice-btn.story-chosen { border-color: var(--hologram); }
+.story-choice-btn.story-correct { border-color: var(--mint); background: rgba(52,224,161,0.12); }
+.story-choice-btn.story-wrong { border-color: var(--signal); background: rgba(255,92,122,0.12); }
+.story-choices .story-choice-btn:first-child { grid-column: 1 / -1; }
+
+/* --- Final --- */
+.story-end-figure { width: 130px; margin: 0 auto 14px; display: block; filter: drop-shadow(0 12px 18px rgba(0,0,0,0.5)); }
+.story-end-headline { font-family: var(--font-display); font-size: 18px; text-align: center; margin-bottom: 8px; }
+.story-end-text { font-size: 14px; line-height: 1.6; color: var(--mist); text-align: center; margin-bottom: 18px; }
+.story-recap { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; }
+.story-recap-item { display: flex; gap: 10px; align-items: flex-start; background: var(--ink-2); border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; }
+.story-recap-icon { flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; }
+.story-recap-ok { background: rgba(52,224,161,0.15); color: var(--mint); }
+.story-recap-bad { background: rgba(255,92,122,0.15); color: var(--signal); }
+.story-recap-text { font-size: 12.5px; line-height: 1.5; color: var(--mist); }
+
+@media (prefers-reduced-motion: reduce) {
+  .story-character, .bg-car { animation: none; }
+}
