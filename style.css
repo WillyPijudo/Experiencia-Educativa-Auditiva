@@ -1922,7 +1922,8 @@ p, .hero-sub, .stat-text, .tool-desc, .epp-card p, .readout-note, .cilia-note, .
 }
 .key-info-img-wrap {
   width: 100%;
-  aspect-ratio: 16 / 9;
+  height: 170px;          /* tamaño fijo, ya no crece según el ancho de pantalla */
+  max-height: 30vh;       /* tope extra para celulares muy chicos o muy altos */
   border-radius: 16px;
   overflow: hidden;
   background: linear-gradient(140deg, var(--ink-3), var(--ink));
@@ -1930,7 +1931,12 @@ p, .hero-sub, .stat-text, .tool-desc, .epp-card p, .readout-note, .cilia-note, .
   margin-bottom: 16px;
   position: relative;
 }
-.key-info-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.key-info-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;    /* se ve la foto entera, sin recortarla ni agrandarla de más */
+  display: block;
+}
 .key-info-img[src=""], .key-info-img:not([src]) { display: none; }
 .key-info-img-fallback {
   position: absolute; inset: 0;
