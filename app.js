@@ -1664,18 +1664,22 @@ function playAlerta() {
   // ---- Video: tabs, play/pause, mute, progreso, cta al video 2 ----
   let currentClip = 1;
   let narrateTimer = null;
+  let narratingPart = null;
 
   function stopNarration() {
     clearTimeout(narrateTimer);
     narrAudio[1].pause();
     narrAudio[2].pause();
     narrateBtn.classList.remove("is-narrating");
-    narrateBtn.innerHTML = '<span class="narrate-btn-icon">▶</span> Escuchar el relato completo';
+    narrateBtn.innerHTML = narratingPart
+      ? `<span class="narrate-btn-icon">▶</span> Seguir escuchando (parte ${narratingPart} de 2)`
+      : '<span class="narrate-btn-icon">▶</span> Escuchar el relato completo';
   }
 
   function stopAll() {
     video.pause();
     stopNarration();
+    narratingPart = null;
     playBtn.classList.remove("is-playing");
   }
   window.stopCortos = stopAll;
@@ -1735,29 +1739,33 @@ function playAlerta() {
   });
 
   // ---- Relato completo: parte 1 -> micropausa -> parte 2, con flip automático ----
-  function playPart(part) {
+  function playPart(part, opts) {
+    const fresh = !opts || opts.fresh !== false;
     video.pause();
-    resetWords(part);
+    narratingPart = part;
+    if (fresh) {
+      resetWords(part);
+      narrAudio[part].currentTime = 0;
+    }
     goToPage(part, { silent: true });
     narrateBtn.classList.add("is-narrating");
     narrateBtn.innerHTML = `<span class="narrate-btn-icon">⏸</span> Relatando… (parte ${part} de 2)`;
-    const audio = narrAudio[part];
-    audio.currentTime = 0;
-    audio.play().catch(() => stopNarration());
+    narrAudio[part].play().catch(() => stopNarration());
   }
 
   narrateBtn.addEventListener("click", () => {
     const isNarrating = narrateBtn.classList.contains("is-narrating");
     if (isNarrating) { stopNarration(); return; }
-    playPart(1);
+    playPart(narratingPart || 1, { fresh: !narratingPart });
   });
 
   narrAudio[1].addEventListener("ended", () => {
-    if (!narrateBtn.classList.contains("is-narrating")) return;
+    if (narratingPart !== 1) return;
     narrateTimer = setTimeout(() => playPart(2), MICRO_PAUSE_MS);
   });
   narrAudio[2].addEventListener("ended", () => {
     stopNarration();
+    narratingPart = null;
   });
 
   [1, 2].forEach((part) => {
