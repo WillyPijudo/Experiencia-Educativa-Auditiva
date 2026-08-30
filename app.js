@@ -7,6 +7,7 @@ const SOUND = {
   click: new Audio("audio/click.mp3"),
   intro: new Audio("audio/intro.mp3"),
   alerta: new Audio("audio/alerta.mp3"),
+  slider: new Audio("audio/slider.mp3"),
 };
 SOUND.intro.loop = true;
 SOUND.intro.volume = 0.5;
@@ -16,6 +17,19 @@ function playSound(name) {
   if (!audio) return;
   try { audio.currentTime = 0; audio.play().catch(() => {}); } catch (e) {}
 }
+
+function playSlider() {
+  const audio = SOUND.slider;
+  try {
+    audio.pause();
+    audio.currentTime = 0;
+    audio.play().catch(() => {});
+  } catch (e) {}
+}
+
+document.addEventListener("input", (e) => {
+  if (e.target && e.target.type === "range") playSlider();
+});
 
 function fadeOutIntro() {
   const step = 0.05;
@@ -533,6 +547,25 @@ function playAlerta() {
         { label: "10 años, con protección desde el día 1", years: 10, damage: 8 },
         { label: "10 años, protección solo \"a veces\"", years: 10, damage: 40 },
       ], correct: 1, explain: "Usar protección desde el principio, todos los días, es lo que realmente frena el daño — no alcanza con usarla 'a veces'." },
+
+    { type: "scenario", q: "Tres situaciones en una planta de neumáticos. ¿Cuál necesita protección auditiva SÍ o SÍ?",
+      scenarios: [
+        { label: "Operando la extrusora de banda de rodamiento (ruido continuo alto)", effective: 102, protected: false },
+        { label: "Cargando datos en la oficina de control de calidad", effective: 48, protected: false },
+        { label: "Usando un taladro en casa, 10 minutos, un sábado", effective: 100, protected: false },
+      ], correct: 0, explain: "El puesto de extrusora es ruido alto y continuo durante toda la jornada: ahí la protección no es opcional. El taladro en casa es un uso breve y ocasional; igual conviene protegerse, pero el riesgo acumulado no es comparable a 8 horas por día en planta." },
+    { type: "scenario", q: "Herramienta eléctrica en casa vs. la misma máquina en la fábrica, ambas a 100 dB. ¿Qué cambia realmente el riesgo?",
+      scenarios: [
+        { label: "En casa: 15 minutos, un fin de semana", effective: 100, protected: false },
+        { label: "En la fábrica: 8 horas, todos los días laborales", effective: 100, protected: false },
+        { label: "Ambas son exactamente el mismo riesgo", effective: 100, protected: false },
+      ], correct: 1, explain: "El nivel en dB es el mismo, pero el riesgo depende del TIEMPO acumulado de exposición. 8 horas diarias, todos los días, es un riesgo muchísimo mayor que 15 minutos esporádicos — por eso en la fábrica la protección es obligatoria, no opcional." },
+    { type: "aging", q: "Tres operarios de la misma línea de producción de neumáticos, distinta antigüedad, todos sin protección constante. ¿Cuál tiene más riesgo de pérdida auditiva permanente?",
+      people: [
+        { label: "3 meses en la línea, recién ingresado", years: 0.25, damage: 6 },
+        { label: "12 años en la línea, protección \"cuando se acuerda\"", years: 12, damage: 60 },
+        { label: "25 años en la línea, sin protección desde siempre", years: 25, damage: 88 },
+      ], correct: 2, explain: "25 años de exposición sin protección constante es el escenario de mayor daño acumulado — y es exactamente el tipo de antigüedad que puede tener un operario en una planta industrial. Por eso la protección tiene que ser un hábito desde el primer día, no algo que se adopta después." },
   ];
 
   const TOTAL_QUESTIONS = 8;
