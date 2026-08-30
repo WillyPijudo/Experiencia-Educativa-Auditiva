@@ -1783,3 +1783,6 @@ function playAlerta() {
       if (progressEl) progressEl.style.width = `${(shownCount / spans.length) * 100}%`;
     });
   });
+
+  goToPage(1, { silent: true });
+})();
