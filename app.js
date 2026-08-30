@@ -591,9 +591,9 @@ function playAlerta() {
       ], correct: 2, explain: "La oficina a 45 dB no representa riesgo. El de doble protección bajó bastante su exposición, pero sigue siendo más alta que la oficina." },
     { type: "scenario", q: "Mismo puesto de taladro (100 dB), tres formas distintas de trabajar. ¿Cuál es la más riesgosa?",
       scenarios: [
-        { label: "Con orejeras", effective: 78, protected: true, role: "obrero", protectionType: "earmuff" },
-        { label: "Con tapones de espuma", effective: 75, protected: true, role: "obrero", protectionType: "foam" },
-        { label: "Sin ninguna protección", effective: 100, protected: false, role: "obrero" },
+        { label: "Con orejeras", effective: 78, protected: true, role: "casa", protectionType: "earmuff" },
+        { label: "Con tapones de espuma", effective: 75, protected: true, role: "casa", protectionType: "foam" },
+        { label: "Sin ninguna protección", effective: 100, protected: false, role: "casa" },
       ], correct: 2, explain: "Sin protección, 100 dB puede dañar el oído en minutos. Cualquiera de las dos protecciones baja el riesgo a un nivel seguro." },
 
     { type: "timeline", q: "Un trabajador está expuesto a 100 dB, sin protección, 8 horas por día, todos los días. ¿En cuánto tiempo el daño en las células ciliadas suele volverse severo?",
@@ -637,11 +637,11 @@ function playAlerta() {
       type: "multiselect", 
       q: "¿Cuáles de estos elementos brindan una protección auditiva real y efectiva? (Seleccioná todas las que correspondan)",
       people: [
-        { label: "Tapones de espuma certificados", correct: true, role: "obrero" },
-        { label: "Orejeras de copa certificadas", correct: true, role: "obrero" },
+        { label: "Tapones de espuma certificados", correct: true, role: "casa", protectionType: "foam" },
+        { label: "Orejeras de copa certificadas", correct: true, role: "casa", protectionType: "earmuff" },
         { label: "Algodón en el oído", correct: false, role: "casa" },
         { label: "Auriculares comunes de música", correct: false, role: "casa" },
-      ], 
+      ],
       explain: "Solo los tapones y las orejeras certificadas atenúan de forma real. El algodón casi no reduce decibeles, y los auriculares de música no están diseñados para atenuar ruido ambiente." 
     },
 
@@ -655,9 +655,9 @@ function playAlerta() {
 
     { type: "scenario", q: "Misma extrusora, 102 dB. Tres formas de encararla. ¿Cuál deja al trabajador con MENOS riesgo?",
       scenarios: [
-        { label: "Sin protección", effective: 102, protected: false, role: "obrero" },
-        { label: "Con tapones de espuma (-25 dB)", effective: 77, protected: true, role: "obrero", protectionType: "foam" },
-        { label: "Con doble protección (-32 dB)", effective: 70, protected: true, role: "obrero", protectionType: "double" },
+        { label: "Sin protección", effective: 102, protected: false, role: "casa" },
+        { label: "Con tapones de espuma (-25 dB)", effective: 77, protected: true, role: "casa", protectionType: "foam" },
+        { label: "Con doble protección (-32 dB)", effective: 70, protected: true, role: "casa", protectionType: "double" },
       ], correct: 2, explain: "Ambas protecciones bajan el riesgo a zona segura, pero la doble protección deja el nivel efectivo más bajo de las tres." },
 
     { type: "aging", q: "Tres plantas con el mismo nivel de ruido, 15 años de operación. ¿Cuál va a tener MÁS problemas de audición entre su personal?",
@@ -947,7 +947,7 @@ function playAlerta() {
       card.className = "scenario-card multiselect-card";
       card.innerHTML = `
         <span class="multiselect-check" aria-hidden="true"></span>
-        ${personFigureSvg(p.role || "casa", "none", "var(--mist)")}
+        ${personFigureSvg(p.role || "casa", p.protectionType || "none", "var(--mist)")}
         <span class="scenario-label">${p.label}</span>`;
       card.addEventListener("click", () => {
         if (answered) return;
