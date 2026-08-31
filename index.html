@@ -353,38 +353,6 @@
   </div>
 </section>
 
-    <!-- TEST (stub) -->
-<section class="screen" id="screen-test" data-screen hidden>
-  <p class="eyebrow">Evaluación</p>
-  <h2 class="screen-title">Test rápido</h2>
-
-  <div class="quiz-card" id="quizCard">
-    <div class="quiz-progress"><span class="quiz-progress-fill" id="quizProgressFill"></span></div>
-    <div class="quiz-top-row">
-      <p class="quiz-counter" id="quizCounter">Pregunta 1 de 8</p>
-      <span class="quiz-type-badge" id="quizTypeBadge">Opción múltiple</span>
-    </div>
-    <p class="quiz-question" id="quizQuestion">—</p>
-    <div class="quiz-options" id="quizOptions"></div>
-    <div class="quiz-feedback" id="quizFeedback" hidden></div>
-  </div>
-
-  <div class="quiz-result" id="quizResult" hidden>
-    <span class="quiz-result-score" id="quizResultScore">0/6</span>
-    <p class="quiz-result-text" id="quizResultText"></p>
-
-    <div class="cert-block">
-      <label class="cert-label" for="certName">Tu nombre, para el certificado</label>
-      <input type="text" id="certName" class="cert-input" placeholder="Nombre y apellido" maxlength="40" autocomplete="off">
-      <button type="button" class="cta-btn cert-btn" id="certDownload">Descargar certificado</button>
-    </div>
-
-    <button type="button" class="cta-btn quiz-retry-btn" id="quizRetry">Reintentar con preguntas nuevas</button>
-  </div>
-</section>
-
-
-
     <!-- HERRAMIENTAS -->
 <section class="screen" id="screen-herramientas" data-screen hidden>
   <p class="eyebrow">Para el día a día</p>
@@ -392,23 +360,25 @@
   <p class="hero-sub">Dos ayudas simples para llevar la protección a la práctica en tu puesto.</p>
 
   <div class="tool-card">
-    <h3 class="tool-title">Cronómetro de exposición</h3>
-    <p class="tool-desc">Elegí el nivel de ruido de tu puesto y arrancá el cronómetro al empezar a trabajar. Te avisa cuando superás el tiempo seguro.</p>
-    <select id="toolDbSelect" class="tool-select">
-      <option value="80">Taller — 80 dB</option>
-      <option value="100" selected>Taladro — 100 dB</option>
-      <option value="115">Amoladora — 115 dB</option>
-      <option value="130">Martillo neumático — 130 dB</option>
-    </select>
-    <div class="tool-timer-row">
-      <span class="tool-timer" id="toolTimer">00:00</span>
-      <span class="tool-timer-limit" id="toolTimerLimit">límite: 8 h</span>
+    <h3 class="tool-title">Medidor de decibeles en vivo</h3>
+    <p class="tool-desc">Usa el micrófono del celular para mostrar, en el momento, qué tan ruidoso es el ambiente. Ideal para una demo en vivo — no reemplaza un sonómetro certificado.</p>
+
+    <div class="db-meter" id="dbMeter">
+      <div class="db-meter-dial">
+        <svg viewBox="0 0 120 70" class="db-meter-arc" aria-hidden="true">
+          <path d="M10 65 A50 50 0 0 1 110 65" class="db-meter-arc-bg"/>
+          <path d="M10 65 A50 50 0 0 1 110 65" class="db-meter-arc-fill" id="dbMeterArcFill"/>
+        </svg>
+        <span class="db-meter-value" id="dbMeterValue">--</span>
+        <span class="db-meter-unit">dB aprox.</span>
+      </div>
+      <p class="db-meter-status" id="dbMeterStatus">Tocá «Iniciar» y permití el uso del micrófono.</p>
     </div>
+
     <div class="tool-timer-buttons">
-      <button type="button" class="cta-btn tool-btn" id="toolStart">Iniciar</button>
-      <button type="button" class="compare-btn tool-btn" id="toolReset">Reiniciar</button>
+      <button type="button" class="cta-btn tool-btn" id="dbMeterStart">Iniciar medición</button>
+      <button type="button" class="compare-btn tool-btn" id="dbMeterStop" hidden>Detener</button>
     </div>
-    <p class="tool-note" id="toolNote">Elegí un nivel y arrancá cuando empieces tu tarea.</p>
   </div>
 
   <div class="tool-card">
@@ -423,6 +393,7 @@
       <span class="tool-streak-number" id="toolStreakNumber">0</span>
       <span class="tool-streak-label">días de racha</span>
     </div>
+    <p class="tool-note" id="toolStreakNote"></p>
   </div>
 </section>
 
@@ -446,61 +417,6 @@
   </div>
 
   <p class="tool-note">Esta app busca ser un primer paso simple y medible: educar, generar el hábito y dejar un registro (el certificado) de quién completó la capacitación.</p>
-</section>
-
-<section class="screen" id="screen-historia" data-screen hidden>
-  <p class="eyebrow">Historia interactiva</p>
-  <h2 class="screen-title">Un día en la vida de Tino</h2>
-  <p class="hero-sub">Acompañalo en distintos momentos de su semana. En cada escena, vos elegís qué protección se pone.</p>
-
-  <!-- INTRO -->
-  <div class="story-phase" id="storyIntro">
-    <div class="story-intro-card">
-      <div class="story-intro-figure" id="storyIntroFigure"></div>
-      <p class="story-intro-text">Tino trabaja en la planta, pero también maneja, descansa y hace changas en su casa — como cualquiera. En cada escena vas a decidir qué protección auditiva ponerse (o si hace falta alguna). Elegí bien y su oído va a llegar sano a la jubilación. Elegí mal, y el daño se va a notar al final.</p>
-    </div>
-    <button type="button" class="cta-btn" id="storyStartBtn">Empezar la historia</button>
-  </div>
-
-  <!-- ESCENA -->
-  <div class="story-phase" id="storyPlay" hidden>
-    <div class="story-progress" id="storyProgress"></div>
-
-    <div class="story-scene" id="storyScene">
-      <div class="story-glow" id="storyGlow"></div>
-      <div class="story-bg" id="storyBg"></div>
-      <div class="story-character" id="storyCharacter"></div>
-    </div>
-
-    <div class="story-window">
-      <div class="story-window-top">
-        <span class="story-tag" id="storyTagDb">— dB</span>
-        <span class="story-tag" id="storyTagTime">—</span>
-        <button type="button" class="story-voice-btn" id="storyVoiceBtn" aria-label="Escuchar narración">🔊</button>
-      </div>
-      <p class="story-window-text" id="storyNarrative">…</p>
-      <p class="story-feedback" id="storyFeedback" hidden></p>
-    </div>
-
-    <div class="story-choices" id="storyChoices">
-      <button type="button" class="story-choice-btn" data-choice="ninguna">Nada</button>
-      <button type="button" class="story-choice-btn" data-choice="espuma">Tapones espuma</button>
-      <button type="button" class="story-choice-btn" data-choice="moldeado">Tapones moldeados</button>
-      <button type="button" class="story-choice-btn" data-choice="orejeras">Orejeras</button>
-      <button type="button" class="story-choice-btn" data-choice="doble">Doble protección</button>
-    </div>
-
-    <button type="button" class="cta-btn story-next-btn" id="storyNextBtn" hidden>Siguiente escena</button>
-  </div>
-
-  <!-- FINAL -->
-  <div class="story-phase" id="storyEnd" hidden>
-    <div class="story-end-figure" id="storyEndFigure"></div>
-    <p class="story-end-headline" id="storyEndHeadline">—</p>
-    <p class="story-end-text" id="storyEndText">—</p>
-    <div class="story-recap" id="storyRecap"></div>
-    <button type="button" class="cta-btn" id="storyReplayBtn">Jugar de nuevo</button>
-  </div>
 </section>
 
 <!-- CORTOMETRAJES: reproductor + relato narrado + subtítulos -->
@@ -582,6 +498,37 @@
   </div>
 </section>
 
+    <!-- TEST Y CERTIFICADO (al final: cierra la capacitación) -->
+<section class="screen" id="screen-test" data-screen hidden>
+  <p class="eyebrow">Evaluación final</p>
+  <h2 class="screen-title">Test y certificado</h2>
+
+  <div class="quiz-card" id="quizCard">
+    <div class="quiz-progress"><span class="quiz-progress-fill" id="quizProgressFill"></span></div>
+    <div class="quiz-top-row">
+      <p class="quiz-counter" id="quizCounter">Pregunta 1 de 8</p>
+      <span class="quiz-type-badge" id="quizTypeBadge">Opción múltiple</span>
+    </div>
+    <p class="quiz-question" id="quizQuestion">—</p>
+    <div class="quiz-options" id="quizOptions"></div>
+    <div class="quiz-feedback" id="quizFeedback" hidden></div>
+  </div>
+
+  <div class="quiz-result" id="quizResult" hidden>
+    <span class="quiz-result-score" id="quizResultScore">0/6</span>
+    <p class="quiz-result-text" id="quizResultText"></p>
+
+    <div class="cert-block">
+      <label class="cert-label" for="certName">Tu nombre y apellido, para el certificado</label>
+      <input type="text" id="certName" class="cert-input" placeholder="Ej: Ana Gómez" maxlength="40" autocomplete="off">
+      <p class="cert-error" id="certError" hidden>Escribí tu nombre <strong>y</strong> tu apellido (con un espacio entre los dos) para poder generar el certificado.</p>
+      <button type="button" class="cta-btn cert-btn" id="certDownload">Descargar certificado</button>
+    </div>
+
+    <button type="button" class="cta-btn quiz-retry-btn" id="quizRetry">Reintentar con preguntas nuevas</button>
+  </div>
+</section>
+
 </main>
     
 
@@ -621,17 +568,16 @@
     <div class="menu-cube-stage">
       <div class="menu-cube" id="menuCube">
         <ul class="menu-list menu-face menu-face-front">
-          <li><button type="button" data-goto="inicio">Inicio</button></li>
-          <li><button type="button" data-goto="simulador">Simulador de exposición</button></li>
-          <li><button type="button" data-goto="epp">Equipos de protección</button></li>
-          <li><button type="button" data-goto="oido">Modelo del oído</button></li>
-          <li><button type="button" data-goto="test">Test y certificado</button></li>
+          <li><button type="button" data-goto="inicio"><span class="menu-icon"><span class="micon micon-home"></span></span><span class="menu-label">Inicio</span></button></li>
+          <li><button type="button" data-goto="simulador"><span class="menu-icon"><span class="micon micon-wave"><i></i><i></i><i></i><i></i></span></span><span class="menu-label">Simulador de exposición</span></button></li>
+          <li><button type="button" data-goto="epp"><span class="menu-icon"><span class="micon micon-shield"></span></span><span class="menu-label">Equipos de protección</span></button></li>
+          <li><button type="button" data-goto="oido"><span class="menu-icon"><span class="micon micon-ear"></span></span><span class="menu-label">Modelo del oído</span></button></li>
         </ul>
         <ul class="menu-list menu-face menu-face-back">
-          <li><button type="button" data-goto="herramientas">Herramientas</button></li>
-          <li><button type="button" data-goto="empresa">Por qué importa</button></li>
-          <li><button type="button" data-goto="historia">Historia interactiva</button></li>
-          <li><button type="button" data-goto="cortos">Cortometrajes</button></li>
+          <li><button type="button" data-goto="herramientas"><span class="menu-icon"><span class="micon micon-gauge"><i></i></span></span><span class="menu-label">Herramientas</span></button></li>
+          <li><button type="button" data-goto="empresa"><span class="menu-icon"><span class="micon micon-chart"><i></i><i></i><i></i></span></span><span class="menu-label">Por qué importa</span></button></li>
+          <li><button type="button" data-goto="cortos"><span class="menu-icon"><span class="micon micon-clapper"><i></i></span></span><span class="menu-label">Cortometrajes<span class="tag tag-new">Nuevo</span></span></button></li>
+          <li><button type="button" data-goto="test"><span class="menu-icon"><span class="micon micon-ribbon"><i></i><i></i></span></span><span class="menu-label">Test y certificado</span></button></li>
         </ul>
       </div>
     </div>

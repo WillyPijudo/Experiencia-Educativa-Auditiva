@@ -99,6 +99,7 @@ function playAlerta() {
       else window.ear3D.pause();
     }
     if (id !== "cortos" && window.stopCortos) window.stopCortos();
+    if (id !== "herramientas" && window.stopDbMeter) window.stopDbMeter();
   }
 
   function openMenu() { menu.hidden = false; }
@@ -469,6 +470,7 @@ function playAlerta() {
   const resultTextEl = document.getElementById("quizResultText");
   const retryBtn = document.getElementById("quizRetry");
   const certNameInput = document.getElementById("certName");
+  const certError = document.getElementById("certError");
   const certBtn = document.getElementById("certDownload");
   if (!questionEl) return;
 
@@ -1052,7 +1054,22 @@ function playAlerta() {
 
   if (certBtn) {
     certBtn.addEventListener("click", () => {
-      const name = (certNameInput.value || "").trim() || "Trabajador/a";
+      const raw = (certNameInput.value || "").trim().replace(/\s+/g, " ");
+      const parts = raw.split(" ").filter(Boolean);
+      const hasNameAndSurname = parts.length >= 2 && parts.every((p) => p.length >= 2);
+      if (!hasNameAndSurname) {
+        certError.hidden = false;
+        certNameInput.classList.add("cert-input-error");
+        certNameInput.classList.remove("cert-shake");
+        void certNameInput.offsetWidth;
+        certNameInput.classList.add("cert-shake");
+        certNameInput.focus();
+        if (navigator.vibrate) navigator.vibrate([20, 40, 20]);
+        return;
+      }
+      certError.hidden = true;
+      certNameInput.classList.remove("cert-input-error");
+      const name = parts.join(" ");
       const code = `ES-${new Date().getFullYear()}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
       certBtn.disabled = true;
       certCinema.hidden = false;
@@ -1065,6 +1082,12 @@ function playAlerta() {
         certCinema.hidden = true;
         certBtn.disabled = false;
       }, 2650);
+    });
+    certNameInput.addEventListener("input", () => {
+      if (!certError.hidden) {
+        certError.hidden = true;
+        certNameInput.classList.remove("cert-input-error");
+      }
     });
   }
 
@@ -1521,284 +1544,6 @@ function playAlerta() {
   window.ear3D = { init, pause, resume };
 })();
 
-// ---- Historia interactiva: dos caminos a 30 años ----
-(function storySection() {
-  const introEl = document.getElementById("storyIntro");
-  const playEl = document.getElementById("storyPlay");
-  const endEl = document.getElementById("storyEnd");
-  if (!introEl || !playEl || !endEl) return;
-
-  const startBtn = document.getElementById("storyStartBtn");
-  const introFigure = document.getElementById("storyIntroFigure");
-  const progressEl = document.getElementById("storyProgress");
-  const bgEl = document.getElementById("storyBg");
-  const glowEl = document.getElementById("storyGlow");
-  const charEl = document.getElementById("storyCharacter");
-  const tagDb = document.getElementById("storyTagDb");
-  const tagTime = document.getElementById("storyTagTime");
-  const voiceBtn = document.getElementById("storyVoiceBtn");
-  const narrativeEl = document.getElementById("storyNarrative");
-  const feedbackEl = document.getElementById("storyFeedback");
-  const choicesEl = document.getElementById("storyChoices");
-  const nextBtn = document.getElementById("storyNextBtn");
-  const endFigure = document.getElementById("storyEndFigure");
-  const headlineEl = document.getElementById("storyEndHeadline");
-  const endTextEl = document.getElementById("storyEndText");
-  const recapEl = document.getElementById("storyRecap");
-  const replayBtn = document.getElementById("storyReplayBtn");
-
-  const ATTEN = { ninguna: 0, orejeras: 22, espuma: 25, moldeado: 28, doble: 32 };
-  const CHOICE_LABEL = { ninguna: "Nada", orejeras: "Orejeras", espuma: "Tapones de espuma", moldeado: "Tapones moldeados", doble: "Doble protección" };
-  const ROUNDS = 4;
-
-  const POOL = [
-    { role: "obrero", db: 105, timeLabel: "turno de 8 horas", minAtten: 22,
-      narrative: "Arranca el turno en la línea de extrusión: la máquina no para en toda la jornada.",
-      tip: "105 dB durante 8 horas sin protección real puede dañar el oído. Con orejeras, tapones o doble protección, el nivel efectivo baja a una zona segura." },
-    { role: "obrero", db: 115, timeLabel: "15 minutos", minAtten: 25,
-      narrative: "Un compañero le pide una mano con la amoladora, apenas 15 minutos.",
-      tip: "115 dB es muy alto incluso para una exposición corta: no alcanza con lo mínimo, hace falta una atenuación buena." },
-    { role: "oficina", db: 55, timeLabel: "jornada completa", minAtten: 0,
-      narrative: "En la oficina, el ruido de fondo es apenas el de las impresoras y el aire acondicionado.",
-      tip: "55 dB está muy por debajo del umbral de riesgo (85 dB): acá no hace falta protección auditiva." },
-    { role: "casa", db: 95, timeLabel: "25 minutos", minAtten: 22,
-      narrative: "El sábado le toca cortar el pasto con la bordeadora.",
-      tip: "95 dB puede dañar el oído incluso en ratos cortos si se repite semana a semana. Un tapón simple ya alcanza." },
-    { role: "transito", db: 88, timeLabel: "40 minutos de viaje", minAtten: 0,
-      narrative: "Vuelve manejando en medio del tránsito pesado, con bocinazos de fondo.",
-      tip: "Adentro del auto, 88 dB por 40 minutos no es un riesgo real — y taparse los oídos manejando sería directamente peligroso." },
-    { role: "obrero", db: 118, timeLabel: "turno de 8 horas", minAtten: 32,
-      narrative: "Le toca cubrir la sala de compresores, el punto más ruidoso de toda la planta.",
-      tip: "118 dB durante 8 horas es un escenario límite: acá la única opción segura es la protección doble." },
-    { role: "casa", db: 100, timeLabel: "10 minutos", minAtten: 22,
-      narrative: "Un sábado usa el taladro en casa para colgar un cuadro.",
-      tip: "Aunque sea un ratito, 100 dB de cerca justifica ponerse algo — el hábito vale también fuera del trabajo." },
-  ];
-
-  function shuffle(arr) {
-    const a = arr.slice();
-    for (let i = a.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [a[i], a[j]] = [a[j], a[i]];
-    }
-    return a;
-  }
-
-  function riskColorForDb(db) {
-    if (db <= 85) return "var(--mint)";
-    if (db <= 105) return "var(--hologram)";
-    return "var(--signal)";
-  }
-
-  function sceneBackgroundSvg(role) {
-    if (role === "obrero") {
-      return `<svg viewBox="0 0 300 170" class="story-bg-svg" aria-hidden="true">
-        <rect x="0" y="118" width="300" height="52" class="bg-floor"/>
-        <rect x="0" y="112" width="300" height="7" class="bg-hazard"/>
-        <rect x="188" y="36" width="82" height="92" rx="6" class="bg-machine"/>
-        <rect x="200" y="52" width="58" height="9" rx="2" class="bg-machine-vent"/>
-        <rect x="200" y="68" width="58" height="9" rx="2" class="bg-machine-vent"/>
-        <rect x="200" y="84" width="58" height="9" rx="2" class="bg-machine-vent"/>
-        <circle cx="36" cy="150" r="15" class="bg-tire"/><circle cx="36" cy="150" r="6" class="bg-tire-hub"/>
-        <circle cx="80" cy="152" r="12" class="bg-tire"/><circle cx="80" cy="152" r="5" class="bg-tire-hub"/>
-      </svg>`;
-    }
-    if (role === "oficina") {
-      return `<svg viewBox="0 0 300 170" class="story-bg-svg" aria-hidden="true">
-        <rect x="0" y="132" width="300" height="38" class="bg-floor-office"/>
-        <rect x="35" y="18" width="55" height="72" rx="4" class="bg-window"/>
-        <line x1="35" y1="34" x2="90" y2="34" class="bg-window-line"/>
-        <line x1="35" y1="50" x2="90" y2="50" class="bg-window-line"/>
-        <line x1="35" y1="66" x2="90" y2="66" class="bg-window-line"/>
-        <rect x="180" y="62" width="90" height="66" rx="4" class="bg-desk"/>
-        <rect x="196" y="26" width="56" height="38" rx="3" class="bg-monitor"/>
-        <rect x="216" y="64" width="16" height="10" class="bg-monitor-stand"/>
-      </svg>`;
-    }
-    if (role === "transito") {
-      return `<svg viewBox="0 0 300 170" class="story-bg-svg" aria-hidden="true">
-        <rect x="0" y="20" width="90" height="100" class="bg-building"/>
-        <rect x="215" y="0" width="85" height="120" class="bg-building bg-building-b"/>
-        <rect x="0" y="120" width="300" height="50" class="bg-road"/>
-        <line x1="0" y1="145" x2="300" y2="145" class="bg-road-line"/>
-        <g class="bg-car">
-          <rect x="128" y="118" width="78" height="22" rx="7" class="bg-car-body"/>
-          <path d="M144 118 L156 96 L188 96 L200 118 Z" class="bg-car-cabin"/>
-          <circle cx="150" cy="142" r="9" class="bg-car-wheel"/>
-          <circle cx="188" cy="142" r="9" class="bg-car-wheel"/>
-        </g>
-      </svg>`;
-    }
-    return `<svg viewBox="0 0 300 170" class="story-bg-svg" aria-hidden="true">
-      <rect x="0" y="140" width="300" height="30" class="bg-floor-home"/>
-      <rect x="18" y="66" width="78" height="58" rx="8" class="bg-couch"/>
-      <rect x="8" y="56" width="20" height="70" rx="7" class="bg-couch-arm"/>
-      <rect x="96" y="56" width="20" height="70" rx="7" class="bg-couch-arm"/>
-      <rect x="195" y="38" width="66" height="48" rx="3" class="bg-tv"/>
-      <rect x="219" y="86" width="18" height="8" class="bg-tv-stand"/>
-    </svg>`;
-  }
-
-  let rounds = [];
-  let roundIndex = 0;
-  let totalDamage = 0;
-  let answeredThisRound = false;
-  let voiceUtterance = null;
-
-  function speak(text) {
-    if (!("speechSynthesis" in window)) return;
-    window.speechSynthesis.cancel();
-    voiceUtterance = new SpeechSynthesisUtterance(text);
-    voiceUtterance.lang = "es-ES";
-    voiceUtterance.rate = 1;
-    window.speechSynthesis.speak(voiceUtterance);
-  }
-
-  function buildProgress() {
-    progressEl.innerHTML = "";
-    rounds.forEach((_, i) => {
-      const dot = document.createElement("span");
-      dot.className = "story-progress-dot";
-      progressEl.appendChild(dot);
-    });
-  }
-
-  function updateProgress() {
-    [...progressEl.children].forEach((dot, i) => {
-      dot.classList.toggle("done", i < roundIndex);
-      dot.classList.toggle("current", i === roundIndex);
-    });
-  }
-
-  function renderRound() {
-    answeredThisRound = false;
-    const round = rounds[roundIndex];
-    const color = riskColorForDb(round.db);
-
-    bgEl.innerHTML = sceneBackgroundSvg(round.role);
-    charEl.innerHTML = personFigureSvg(round.role === "transito" ? "casa" : round.role, "none", "var(--paper)");
-    glowEl.style.setProperty("--scene-color", color);
-
-    tagDb.textContent = `${round.db} dB`;
-    tagDb.style.color = color;
-    tagTime.textContent = round.timeLabel;
-    narrativeEl.textContent = round.narrative;
-    feedbackEl.hidden = true;
-    feedbackEl.className = "story-feedback";
-    nextBtn.hidden = true;
-
-    [...choicesEl.children].forEach((btn) => {
-      btn.disabled = false;
-      btn.classList.remove("story-correct", "story-wrong", "story-chosen");
-    });
-
-    updateProgress();
-    window.speechSynthesis && window.speechSynthesis.cancel();
-  }
-
-  function answerRound(choice) {
-    if (answeredThisRound) return;
-    answeredThisRound = true;
-    const round = rounds[roundIndex];
-    const atten = ATTEN[choice];
-
-    let result;
-    if (round.minAtten === 0) {
-      result = choice === "ninguna" ? "correct" : "neutral";
-    } else {
-      result = atten >= round.minAtten ? "correct" : "wrong";
-    }
-    if (result === "wrong") totalDamage += 25;
-
-    charEl.innerHTML = personFigureSvg(round.role === "transito" ? "casa" : round.role, choice, "var(--paper)");
-
-    [...choicesEl.children].forEach((btn) => {
-      btn.disabled = true;
-      if (btn.dataset.choice === choice) btn.classList.add("story-chosen");
-      if (result === "wrong" && btn.dataset.choice === choice) btn.classList.add("story-wrong");
-      if (result !== "wrong" && btn.dataset.choice === choice) btn.classList.add("story-correct");
-    });
-
-    feedbackEl.hidden = false;
-    feedbackEl.classList.add(result === "wrong" ? "story-feedback-wrong" : result === "neutral" ? "story-feedback-neutral" : "story-feedback-correct");
-    feedbackEl.textContent = round.tip;
-
-    round.chosen = choice;
-    round.result = result;
-
-    nextBtn.hidden = false;
-    nextBtn.textContent = roundIndex < rounds.length - 1 ? "Siguiente escena" : "Ver el final";
-  }
-
-  function renderEnd() {
-    playEl.hidden = true;
-    endEl.hidden = false;
-
-    let headline, text, figColor, figProtection;
-    if (totalDamage === 0) {
-      headline = "Oído sano, decisión por decisión.";
-      text = "Tino terminó la semana sin sumar ningún riesgo auditivo. Así se cuida el oído de verdad: no con un gesto heroico, sino con la protección correcta en cada momento.";
-      figColor = "var(--mint)"; figProtection = "doble";
-    } else if (totalDamage <= 25) {
-      headline = "Casi perfecto — un descuido cuenta.";
-      text = "Estuvo bien casi todo el tiempo, pero un solo momento de menos protección también suma. El daño auditivo no avisa: por eso el hábito tiene que ser todas las veces, no casi todas.";
-      figColor = "var(--hologram)"; figProtection = "orejeras";
-    } else if (totalDamage <= 50) {
-      headline = "Un par de veces se la jugó de más.";
-      text = "El daño auditivo no se nota al otro día — se nota recién con los años. Las decisiones de hoy son las que definen cómo va a escuchar Tino dentro de dos décadas.";
-      figColor = "var(--signal)"; figProtection = "espuma";
-    } else {
-      headline = "Casi ninguna decisión lo protegió.";
-      text = "Si esto fuera real, en pocos años Tino ya tendría una pérdida auditiva notoria. La buena noticia: en la vida real, a diferencia del juego, siempre podés volver a elegir bien desde la próxima exposición.";
-      figColor = "var(--signal)"; figProtection = "none";
-    }
-
-    headlineEl.textContent = headline;
-    endTextEl.textContent = text;
-    endFigure.innerHTML = personFigureSvg("obrero", figProtection, figColor);
-
-    recapEl.innerHTML = "";
-    rounds.forEach((round) => {
-      const row = document.createElement("div");
-      row.className = "story-recap-item";
-      const icon = round.result === "wrong" ? "⚠" : "✓";
-      row.innerHTML = `
-        <span class="story-recap-icon ${round.result === "wrong" ? "story-recap-bad" : "story-recap-ok"}">${icon}</span>
-        <span class="story-recap-text">${round.narrative} <strong>${round.db} dB, ${round.timeLabel}</strong> — eligió: ${CHOICE_LABEL[round.chosen]}</span>`;
-      recapEl.appendChild(row);
-    });
-  }
-
-  function startGame() {
-    rounds = shuffle(POOL).slice(0, ROUNDS);
-    roundIndex = 0;
-    totalDamage = 0;
-    introEl.hidden = true;
-    endEl.hidden = true;
-    playEl.hidden = false;
-    buildProgress();
-    renderRound();
-  }
-
-  choicesEl.querySelectorAll(".story-choice-btn").forEach((btn) => {
-    btn.addEventListener("click", () => answerRound(btn.dataset.choice));
-  });
-
-  nextBtn.addEventListener("click", () => {
-    roundIndex += 1;
-    if (roundIndex >= rounds.length) renderEnd();
-    else renderRound();
-  });
-
-  voiceBtn.addEventListener("click", () => speak(rounds[roundIndex].narrative));
-  startBtn.addEventListener("click", startGame);
-  replayBtn.addEventListener("click", () => {
-    endEl.hidden = true;
-    introEl.hidden = false;
-  });
-
-  if (introFigure) introFigure.innerHTML = personFigureSvg("obrero", "earmuff", "var(--hologram)");
-})();
 
 // ---- Cortometrajes: reproductor + relato en 2 partes + libro de subtítulos ----
 (function cortos() {
@@ -2154,4 +1899,164 @@ function playAlerta() {
   });
 
   goToPage(1, { silent: true });
+})();
+
+// ---- Medidor de decibeles en vivo (micrófono real, para demo en vivo) ----
+(function dbMeterTool() {
+  const startBtn = document.getElementById("dbMeterStart");
+  const stopBtn = document.getElementById("dbMeterStop");
+  const valueEl = document.getElementById("dbMeterValue");
+  const statusEl = document.getElementById("dbMeterStatus");
+  const arcFill = document.getElementById("dbMeterArcFill");
+  if (!startBtn) return;
+
+  const ARC_LEN = 157;
+  let audioCtx = null;
+  let analyser = null;
+  let source = null;
+  let stream = null;
+  let rafId = null;
+
+  function setStatus(text, cls) {
+    statusEl.textContent = text;
+    statusEl.className = `db-meter-status${cls ? " " + cls : ""}`;
+  }
+
+  function stop() {
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = null;
+    if (stream) stream.getTracks().forEach((t) => t.stop());
+    stream = null;
+    if (audioCtx) audioCtx.close().catch(() => {});
+    audioCtx = null;
+    analyser = null;
+    source = null;
+    startBtn.hidden = false;
+    stopBtn.hidden = true;
+    valueEl.textContent = "--";
+    arcFill.style.strokeDashoffset = String(ARC_LEN);
+    setStatus("Tocá «Iniciar» y permití el uso del micrófono.");
+  }
+  window.stopDbMeter = stop;
+
+  function loop() {
+    const data = new Uint8Array(analyser.fftSize);
+    analyser.getByteTimeDomainData(data);
+    let sum = 0;
+    for (let i = 0; i < data.length; i++) {
+      const v = (data[i] - 128) / 128;
+      sum += v * v;
+    }
+    const rms = Math.sqrt(sum / data.length);
+    const dbfs = 20 * Math.log10(rms || 0.0001);
+    // calibración aproximada: no es un instrumento certificado, es orientativo
+    let approx = Math.round(dbfs + 100);
+    approx = Math.max(30, Math.min(120, approx));
+
+    valueEl.textContent = approx;
+    const pct = (approx - 30) / (120 - 30);
+    arcFill.style.strokeDashoffset = String(ARC_LEN * (1 - pct));
+
+    if (approx >= 85) {
+      arcFill.style.stroke = "var(--signal)";
+      setStatus("Nivel de riesgo — usá protección auditiva ya.", "status-danger");
+    } else if (approx >= 70) {
+      arcFill.style.stroke = "var(--hologram)";
+      setStatus("Nivel moderado — considerá usar protección.", "status-warn");
+    } else {
+      arcFill.style.stroke = "var(--mint)";
+      setStatus("Nivel seguro por ahora.", "status-ok");
+    }
+    rafId = requestAnimationFrame(loop);
+  }
+
+  startBtn.addEventListener("click", async () => {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      setStatus("Tu navegador no permite acceder al micrófono acá.", "status-danger");
+      return;
+    }
+    setStatus("Pidiendo permiso del micrófono…");
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 2048;
+      source = audioCtx.createMediaStreamSource(stream);
+      source.connect(analyser);
+      startBtn.hidden = true;
+      stopBtn.hidden = false;
+      loop();
+    } catch (err) {
+      setStatus("No pudimos acceder al micrófono. Revisá los permisos del navegador.", "status-danger");
+    }
+  });
+
+  stopBtn.addEventListener("click", stop);
+})();
+
+// ---- Checklist diaria de EPP + racha (persistida en localStorage) ----
+(function checklistTool() {
+  const checklistEl = document.getElementById("toolChecklist");
+  const streakNumberEl = document.getElementById("toolStreakNumber");
+  const streakNoteEl = document.getElementById("toolStreakNote");
+  if (!checklistEl) return;
+
+  const checkboxes = [...checklistEl.querySelectorAll('input[type="checkbox"]')];
+  const STORAGE_KEY = "escudo-sonoro-checklist";
+
+  function todayKey() {
+    const d = new Date();
+    return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+  }
+
+  function readState() {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY));
+      if (parsed && typeof parsed.streak === "number") return parsed;
+    } catch (e) { /* ignore */ }
+    return { streak: 0, lastDate: null };
+  }
+
+  function saveState(state) {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { /* ignore */ }
+  }
+
+  function isYesterday(dateKey) {
+    if (!dateKey) return false;
+    const [y, m, d] = dateKey.split("-").map(Number);
+    const prev = new Date(y, m - 1, d);
+    prev.setDate(prev.getDate() + 1);
+    return `${prev.getFullYear()}-${prev.getMonth() + 1}-${prev.getDate()}` === todayKey();
+  }
+
+  let state = readState();
+  streakNumberEl.textContent = state.streak;
+
+  if (state.lastDate === todayKey()) {
+    checkboxes.forEach((cb) => { cb.checked = true; cb.disabled = true; });
+    streakNoteEl.textContent = "Ya completaste el checklist de hoy. ¡Volvé mañana!";
+  } else {
+    streakNoteEl.textContent = "Marcá los tres puntos para sumar el día de hoy a tu racha.";
+  }
+
+  checkboxes.forEach((cb) => {
+    cb.addEventListener("change", () => {
+      if (!checkboxes.every((c) => c.checked)) return;
+      if (state.lastDate === todayKey()) return;
+
+      const continued = isYesterday(state.lastDate);
+      state.streak = continued ? state.streak + 1 : 1;
+      state.lastDate = todayKey();
+      saveState(state);
+
+      streakNumberEl.textContent = state.streak;
+      streakNumberEl.classList.remove("streak-bump");
+      void streakNumberEl.offsetWidth;
+      streakNumberEl.classList.add("streak-bump");
+
+      checkboxes.forEach((c) => { c.disabled = true; });
+      streakNoteEl.textContent = "¡Listo! Sumaste el día de hoy. Volvé mañana para seguir la racha.";
+      if (navigator.vibrate) navigator.vibrate(25);
+    });
+  });
 })();
