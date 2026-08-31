@@ -717,6 +717,16 @@ function playAlerta() {
     });
   }
 
+function avoidWeakOpener(session) {
+  // La pregunta de "seleccioná todas las que correspondan" es más pesada
+  // para arrancar el test: si cae primera, la reubicamos más adelante.
+  if (session.length > 1 && session[0].type === "multiselect") {
+    const swapWith = 1 + Math.floor(Math.random() * (session.length - 1));
+    [session[0], session[swapWith]] = [session[swapWith], session[0]];
+  }
+  return session;
+}
+  
   function completeQuestion(isCorrect, explainText) {
     if (answered) return;
     answered = true;
@@ -1027,7 +1037,7 @@ function playAlerta() {
   }
 
   function startQuiz() {
-    QUESTIONS = buildSession();
+    QUESTIONS = avoidWeakOpener(buildSession());
     current = 0; score = 0;
     quizCard.hidden = false;
     resultEl.hidden = true;
