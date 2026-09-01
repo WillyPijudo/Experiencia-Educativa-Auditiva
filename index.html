@@ -518,6 +518,45 @@
     <p class="quiz-result-text" id="quizResultText"></p>
 
     <div class="cert-block">
+      <svg class="cert-block-medal" viewBox="0 0 220 220" aria-hidden="true">
+        <defs>
+          <linearGradient id="ribbonGradLMini" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#8fe9ff"/>
+            <stop offset="100%" stop-color="#1c6f85"/>
+          </linearGradient>
+          <linearGradient id="ribbonGradRMini" x1="1" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#8fe9ff"/>
+            <stop offset="100%" stop-color="#1c6f85"/>
+          </linearGradient>
+          <linearGradient id="medalRimGradMini" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#d6fff0"/>
+            <stop offset="45%" stop-color="#34e0a1"/>
+            <stop offset="100%" stop-color="#0a4a35"/>
+          </linearGradient>
+          <radialGradient id="medalFaceGradMini" cx="35%" cy="28%" r="80%">
+            <stop offset="0%" stop-color="#eafff5"/>
+            <stop offset="40%" stop-color="#34e0a1"/>
+            <stop offset="78%" stop-color="#158f66"/>
+            <stop offset="100%" stop-color="#0a4a35"/>
+          </radialGradient>
+          <clipPath id="medalClipMini"><circle cx="110" cy="110" r="60"/></clipPath>
+        </defs>
+        <path class="medal-ribbon" d="M88 152 L66 208 L90 196 L100 214 L108 158 Z" fill="url(#ribbonGradLMini)"/>
+        <path class="medal-ribbon" d="M132 152 L154 208 L130 196 L120 214 L112 158 Z" fill="url(#ribbonGradRMini)"/>
+        <circle class="medal-rim" cx="110" cy="110" r="66" fill="url(#medalRimGradMini)"/>
+        <circle class="medal-face" cx="110" cy="110" r="58" fill="url(#medalFaceGradMini)"/>
+        <ellipse class="medal-highlight" cx="88" cy="86" rx="20" ry="12"/>
+        <g clip-path="url(#medalClipMini)">
+          <rect class="medal-shine" x="60" y="10" width="26" height="220" transform="rotate(24 110 110)"/>
+        </g>
+        <g class="medal-mini-emblem" transform="translate(110,110) scale(0.34) translate(-100,-107)">
+          <rect x="55" y="130" width="11" height="30" rx="3"/>
+          <rect x="73" y="103" width="11" height="57" rx="3"/>
+          <rect x="91" y="72"  width="11" height="88" rx="3"/>
+          <rect x="109" y="94" width="11" height="66" rx="3"/>
+          <rect x="127" y="112" width="11" height="48" rx="3"/>
+        </g>
+      </svg>
       <label class="cert-label" for="certName">Tu nombre y apellido, para el certificado</label>
       <input type="text" id="certName" class="cert-input" placeholder="Ej: Ana Gómez" maxlength="40" autocomplete="off">
       <p class="cert-error" id="certError" hidden>Escribí tu nombre <strong>y</strong> tu apellido (con un espacio entre los dos) para poder generar el certificado.</p>
@@ -532,11 +571,52 @@
   <!-- Cinemática del certificado -->
   <div class="cert-cinema" id="certCinema" hidden>
     <div class="cert-cinema-inner">
-      <svg class="cert-seal-svg" viewBox="0 0 220 220" aria-hidden="true">
+      <div class="cert-seal-stage">
+        <svg class="cert-seal-svg" viewBox="0 0 220 220" aria-hidden="true">
+        <defs>
+          <linearGradient id="ribbonGradL" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#8fe9ff"/>
+            <stop offset="100%" stop-color="#1c6f85"/>
+          </linearGradient>
+          <linearGradient id="ribbonGradR" x1="1" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#8fe9ff"/>
+            <stop offset="100%" stop-color="#1c6f85"/>
+          </linearGradient>
+          <linearGradient id="medalRimGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#d6fff0"/>
+            <stop offset="45%" stop-color="#34e0a1"/>
+            <stop offset="100%" stop-color="#0a4a35"/>
+          </linearGradient>
+          <radialGradient id="medalFaceGrad" cx="35%" cy="28%" r="80%">
+            <stop offset="0%" stop-color="#eafff5"/>
+            <stop offset="40%" stop-color="#34e0a1"/>
+            <stop offset="78%" stop-color="#158f66"/>
+            <stop offset="100%" stop-color="#0a4a35"/>
+          </radialGradient>
+          <clipPath id="medalClip"><circle cx="110" cy="110" r="60"/></clipPath>
+        </defs>
+
+        <!-- Cintas colgantes -->
+        <path class="medal-ribbon" d="M88 152 L66 208 L90 196 L100 214 L108 158 Z" fill="url(#ribbonGradL)"/>
+        <path class="medal-ribbon" d="M132 152 L154 208 L130 196 L120 214 L112 158 Z" fill="url(#ribbonGradR)"/>
+
+        <!-- Halos de energía (se dibujan al aparecer) -->
         <circle class="cert-seal-ring" cx="110" cy="110" r="86"/>
         <circle class="cert-seal-ring-2" cx="110" cy="110" r="70"/>
+
+        <!-- Disco de la medalla, con relieve -->
+        <circle class="medal-rim" cx="110" cy="110" r="66" fill="url(#medalRimGrad)"/>
+        <circle class="medal-face" cx="110" cy="110" r="58" fill="url(#medalFaceGrad)"/>
+        <ellipse class="medal-highlight" cx="88" cy="86" rx="20" ry="12"/>
+
+        <g clip-path="url(#medalClip)">
+          <rect class="medal-shine" x="60" y="10" width="26" height="220" transform="rotate(24 110 110)"/>
+        </g>
+
+        <!-- Check final, se sella arriba de la medalla -->
         <path class="cert-seal-check" d="M76 112 L100 136 L148 84"/>
       </svg>
+      </div>
       <svg class="cert-sign-svg" viewBox="0 0 320 100" aria-hidden="true">
         <path class="cert-sign-path" d="M20 70 C 40 20, 60 20, 75 55 C 85 78, 95 40, 110 45 C 125 50, 120 75, 140 60 C 160 45, 165 25, 185 40 C 205 55, 200 75, 225 65 C 250 55, 255 30, 280 45 C 295 54, 298 60, 300 62"/>
       </svg>

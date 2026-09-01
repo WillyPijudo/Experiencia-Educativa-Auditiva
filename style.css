@@ -1674,12 +1674,51 @@ body::before {
 .cert-cinema { position: fixed; inset: 0; z-index: 80; background: rgba(10,14,23,0.94); display: flex; align-items: center; justify-content: center; animation: menu-in 0.25s ease both; }
 .cert-cinema[hidden] { display: none; }
 .cert-cinema-inner { display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 24px; }
-.cert-seal-svg { width: 140px; height: 140px; filter: drop-shadow(0 0 16px rgba(52,224,161,0.5)); }
+.cert-seal-stage { position: relative; width: 140px; height: 140px; }
+.cert-seal-svg {
+  width: 140px;
+  height: 140px;
+  filter: drop-shadow(0 0 16px rgba(52,224,161,0.5)) drop-shadow(0 14px 20px rgba(0,0,0,0.4));
+  animation: medal-pop 0.65s cubic-bezier(.25,1.4,.4,1) both;
+  overflow: visible;
+}
 .cert-seal-ring { fill: none; stroke: var(--mint); stroke-width: 4; stroke-dasharray: 540; stroke-dashoffset: 540; animation: seal-ring-draw 1s cubic-bezier(.3,.7,.2,1) forwards; }
 .cert-seal-ring-2 { fill: none; stroke: var(--hologram); stroke-width: 2; stroke-dasharray: 440; stroke-dashoffset: 440; animation: seal-ring-draw 1s cubic-bezier(.3,.7,.2,1) forwards 0.15s; }
-.cert-seal-check { fill: none; stroke: var(--mint); stroke-width: 8; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 110; stroke-dashoffset: 110; animation: seal-check-draw 0.45s ease forwards 1.05s; }
+.cert-seal-check {
+  fill: none; stroke: #ffffff; stroke-width: 9; stroke-linecap: round; stroke-linejoin: round;
+  stroke-dasharray: 110; stroke-dashoffset: 110;
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,0.4));
+  animation: seal-check-draw 0.45s ease forwards 1.05s;
+}
 @keyframes seal-ring-draw { to { stroke-dashoffset: 0; } }
 @keyframes seal-check-draw { to { stroke-dashoffset: 0; } }
+@keyframes medal-pop {
+  0% { transform: scale(0.25) rotate(-30deg); opacity: 0; }
+  65% { transform: scale(1.1) rotate(6deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+/* --- Medalla: relieve, cinta y brillo (compartido entre la cinemática y el mini ícono) --- */
+.medal-rim { filter: drop-shadow(0 -2px 2px rgba(255,255,255,0.3)) drop-shadow(0 4px 5px rgba(0,0,0,0.4)); }
+.medal-face { }
+.medal-highlight { fill: #ffffff; opacity: 0.4; filter: blur(3px); }
+.medal-ribbon { filter: drop-shadow(0 3px 4px rgba(0,0,0,0.3)); }
+.medal-shine { fill: rgba(255,255,255,0.6); animation: medal-shine-sweep 3.4s ease-in-out infinite; }
+@keyframes medal-shine-sweep {
+  0%, 20% { transform: translateX(-70px) rotate(24deg); }
+  55%, 100% { transform: translateX(70px) rotate(24deg); }
+}
+.medal-mini-emblem rect { fill: rgba(10,50,35,0.55); }
+
+.cert-block-medal {
+  display: block;
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 10px;
+  overflow: visible;
+  filter: drop-shadow(0 8px 12px rgba(0,0,0,0.35));
+  animation: figure-float 3.6s ease-in-out infinite;
+}
 .cert-sign-svg { width: 220px; height: 70px; opacity: 0; animation: sign-fade 0.3s ease forwards 1.5s; }
 .cert-sign-path { fill: none; stroke: var(--hologram); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 620; stroke-dashoffset: 620; animation: sign-draw 1s cubic-bezier(.3,.7,.2,1) forwards 1.5s; }
 @keyframes sign-fade { to { opacity: 1; } }
