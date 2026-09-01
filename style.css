@@ -1670,60 +1670,115 @@ body::before {
 .sketchfab-credit { font-family: var(--font-mono); font-size: 10px; color: var(--mist); text-align: center; margin-bottom: 14px; }
 .sketchfab-credit a { color: var(--hologram-dim); }
 
-/* ---- Cinemática del certificado (firma + sello animados) ---- */
-.cert-cinema { position: fixed; inset: 0; z-index: 80; background: rgba(10,14,23,0.94); display: flex; align-items: center; justify-content: center; animation: menu-in 0.25s ease both; }
+/* ---- Cinemática del certificado (firma + sello animados) ----
+   Antes la animación se disparaba con el atributo [hidden] solo, sin
+   forzar un reflow: la primera vez se veía bien, pero al generar un
+   segundo certificado el navegador no la reiniciaba del todo y
+   quedaba pisada/trabada a mitad de camino. Ahora todo el timeline
+   cuelga de la clase .playing, que el JS agrega recién después de
+   forzar un reflow — así se reinicia limpio las veces que haga falta. */
+.cert-cinema { position: fixed; inset: 0; z-index: 80; background: rgba(10,14,23,0.94); display: flex; align-items: center; justify-content: center; opacity: 0; }
 .cert-cinema[hidden] { display: none; }
+.cert-cinema.playing { animation: cinema-fade-in 0.3s ease forwards; }
+@keyframes cinema-fade-in { to { opacity: 1; } }
+
 .cert-cinema-inner { display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 24px; }
-.cert-seal-stage { position: relative; width: 140px; height: 140px; }
+.cert-seal-stage { position: relative; width: 150px; height: 165px; }
 .cert-seal-svg {
-  width: 140px;
-  height: 140px;
-  filter: drop-shadow(0 0 16px rgba(52,224,161,0.5)) drop-shadow(0 14px 20px rgba(0,0,0,0.4));
-  animation: medal-pop 0.65s cubic-bezier(.25,1.4,.4,1) both;
+  width: 150px;
+  height: 165px;
+  filter: drop-shadow(0 0 18px rgba(52,224,161,0.5)) drop-shadow(0 16px 22px rgba(0,0,0,0.45));
   overflow: visible;
+  opacity: 0;
+  transform: scale(0.3) rotate(-25deg);
 }
-.cert-seal-ring { fill: none; stroke: var(--mint); stroke-width: 4; stroke-dasharray: 540; stroke-dashoffset: 540; animation: seal-ring-draw 1s cubic-bezier(.3,.7,.2,1) forwards; }
-.cert-seal-ring-2 { fill: none; stroke: var(--hologram); stroke-width: 2; stroke-dasharray: 440; stroke-dashoffset: 440; animation: seal-ring-draw 1s cubic-bezier(.3,.7,.2,1) forwards 0.15s; }
-.cert-seal-check {
-  fill: none; stroke: #ffffff; stroke-width: 9; stroke-linecap: round; stroke-linejoin: round;
-  stroke-dasharray: 110; stroke-dashoffset: 110;
-  filter: drop-shadow(0 2px 3px rgba(0,0,0,0.4));
-  animation: seal-check-draw 0.45s ease forwards 1.05s;
-}
-@keyframes seal-ring-draw { to { stroke-dashoffset: 0; } }
-@keyframes seal-check-draw { to { stroke-dashoffset: 0; } }
+.cert-cinema.playing .cert-seal-svg { animation: medal-pop 0.7s cubic-bezier(0.22, 1.5, 0.36, 1) forwards; }
 @keyframes medal-pop {
-  0% { transform: scale(0.25) rotate(-30deg); opacity: 0; }
-  65% { transform: scale(1.1) rotate(6deg); opacity: 1; }
+  0%   { transform: scale(0.3) rotate(-25deg); opacity: 0; }
+  60%  { transform: scale(1.08) rotate(4deg); opacity: 1; }
   100% { transform: scale(1) rotate(0deg); opacity: 1; }
 }
 
-/* --- Medalla: relieve, cinta y brillo (compartido entre la cinemática y el mini ícono) --- */
-.medal-rim { filter: drop-shadow(0 -2px 2px rgba(255,255,255,0.3)) drop-shadow(0 4px 5px rgba(0,0,0,0.4)); }
-.medal-face { }
-.medal-highlight { fill: #ffffff; opacity: 0.4; filter: blur(3px); }
-.medal-ribbon { filter: drop-shadow(0 3px 4px rgba(0,0,0,0.3)); }
-.medal-shine { fill: rgba(255,255,255,0.6); animation: medal-shine-sweep 3.4s ease-in-out infinite; }
-@keyframes medal-shine-sweep {
-  0%, 20% { transform: translateX(-70px) rotate(24deg); }
-  55%, 100% { transform: translateX(70px) rotate(24deg); }
+.cert-seal-ring, .cert-seal-ring-2 { fill: none; opacity: 0; }
+.cert-seal-ring { stroke: var(--mint); stroke-width: 4; stroke-linecap: round; stroke-dasharray: 503; stroke-dashoffset: 503; }
+.cert-seal-ring-2 { stroke: var(--hologram); stroke-width: 2; stroke-linecap: round; stroke-dasharray: 415; stroke-dashoffset: 415; }
+.cert-cinema.playing .cert-seal-ring { animation: seal-ring-draw 0.9s cubic-bezier(0.3, 0.7, 0.2, 1) 0.15s forwards; }
+.cert-cinema.playing .cert-seal-ring-2 { animation: seal-ring-draw 0.9s cubic-bezier(0.3, 0.7, 0.2, 1) 0.3s forwards; }
+@keyframes seal-ring-draw { 0% { opacity: 0.9; } 100% { stroke-dashoffset: 0; opacity: 0.55; } }
+
+/* El check final "estampa" con un pop en vez de dibujarse de a poco
+   -es un trazo grueso, se ve mejor golpeando de una que línea a línea- */
+.cert-seal-check {
+  fill: none; stroke: #ffffff; stroke-width: 11; stroke-linecap: round; stroke-linejoin: round;
+  filter: drop-shadow(0 2px 2px rgba(0,0,0,0.45)) drop-shadow(0 -1px 1px rgba(255,255,255,0.5));
+  transform-origin: 100px 96px;
+  transform: scale(0);
+  opacity: 0;
 }
-.medal-mini-emblem rect { fill: rgba(10,50,35,0.55); }
+.cert-cinema.playing .cert-seal-check { animation: seal-check-pop 0.4s cubic-bezier(0.3, 1.4, 0.4, 1) 0.85s forwards; }
+@keyframes seal-check-pop { to { transform: scale(1); opacity: 1; } }
+
+/* --- Medalla: relieve real (varios stops de gradiente simulan la
+   curva del metal), costura entre el aro y la cara, sombra interna
+   para que se sienta hundida, y brillo que la recorre. Compartida
+   entre la cinemática y el ícono mini del resultado del quiz. --- */
+.medal-rim { filter: drop-shadow(0 -2px 2px rgba(255,255,255,0.35)) drop-shadow(0 5px 6px rgba(0,0,0,0.45)); }
+.medal-groove { fill: none; stroke: rgba(0,0,0,0.35); stroke-width: 1.5; }
+.medal-face-shadow { fill: rgba(0,0,0,0.22); }
+.medal-highlight { fill: #ffffff; opacity: 0.45; filter: blur(4px); }
+
+.medal-ribbons { transform-origin: 100px 130px; animation: ribbon-sway 3.2s ease-in-out infinite; }
+@keyframes ribbon-sway { 0%, 100% { transform: rotate(-1.2deg); } 50% { transform: rotate(1.2deg); } }
+.medal-ribbon { filter: drop-shadow(0 3px 4px rgba(0,0,0,0.3)); }
+.medal-ribbon-crease { stroke: rgba(0,0,0,0.25); stroke-width: 2; stroke-linecap: round; fill: none; }
+
+.medal-shine { fill: rgba(255,255,255,0.55); }
+.cert-block-medal .medal-shine { animation: medal-shine-sweep 3.6s ease-in-out infinite; }
+.cert-cinema.playing .medal-shine { animation: medal-shine-sweep 3.6s ease-in-out infinite 0.7s; }
+@keyframes medal-shine-sweep {
+  0%, 15%  { transform: translateX(-60px) rotate(24deg); }
+  55%, 100% { transform: translateX(60px) rotate(24deg); }
+}
+
+.medal-emblem rect { fill: rgba(6,38,26,0.75); }
+.medal-check {
+  fill: none; stroke: #ffffff; stroke-width: 11; stroke-linecap: round; stroke-linejoin: round;
+  filter: drop-shadow(0 2px 2px rgba(0,0,0,0.4)) drop-shadow(0 -1px 1px rgba(255,255,255,0.5));
+}
 
 .cert-block-medal {
   display: block;
-  width: 72px;
-  height: 72px;
+  width: 96px;
+  height: 106px;
   margin: 0 auto 10px;
   overflow: visible;
-  filter: drop-shadow(0 8px 12px rgba(0,0,0,0.35));
-  animation: figure-float 3.6s ease-in-out infinite;
+  animation: figure-float 3.6s ease-in-out infinite, medal-glow-pulse 2.6s ease-in-out infinite;
 }
-.cert-sign-svg { width: 220px; height: 70px; opacity: 0; animation: sign-fade 0.3s ease forwards 1.5s; }
-.cert-sign-path { fill: none; stroke: var(--hologram); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 620; stroke-dashoffset: 620; animation: sign-draw 1s cubic-bezier(.3,.7,.2,1) forwards 1.5s; }
+@keyframes medal-glow-pulse {
+  0%, 100% { filter: drop-shadow(0 8px 12px rgba(0,0,0,0.35)) drop-shadow(0 0 6px rgba(52,224,161,0.25)); }
+  50%      { filter: drop-shadow(0 8px 12px rgba(0,0,0,0.35)) drop-shadow(0 0 14px rgba(52,224,161,0.55)); }
+}
+
+.cert-sign-svg { width: 220px; height: 70px; opacity: 0; }
+.cert-sign-path { fill: none; stroke: var(--hologram); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 620; stroke-dashoffset: 620; }
+.cert-cinema.playing .cert-sign-svg { animation: sign-fade 0.3s ease 1.35s forwards; }
+.cert-cinema.playing .cert-sign-path { animation: sign-draw 1s cubic-bezier(0.3, 0.7, 0.2, 1) 1.35s forwards; }
 @keyframes sign-fade { to { opacity: 1; } }
 @keyframes sign-draw { to { stroke-dashoffset: 0; } }
 .cert-cinema-text { font-family: var(--font-mono); font-size: 12px; letter-spacing: 1.5px; color: var(--mist); }
+
+@media (prefers-reduced-motion: reduce) {
+  .cert-block-medal, .cert-block-medal .medal-shine, .medal-ribbons,
+  .cert-cinema.playing .cert-seal-svg, .cert-cinema.playing .cert-seal-ring,
+  .cert-cinema.playing .cert-seal-ring-2, .cert-cinema.playing .cert-seal-check,
+  .cert-cinema.playing .medal-shine, .cert-cinema.playing .cert-sign-svg,
+  .cert-cinema.playing .cert-sign-path {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    stroke-dashoffset: 0 !important;
+  }
+}
 
 
 

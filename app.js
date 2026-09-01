@@ -1080,6 +1080,9 @@ function avoidWeakOpener(session) {
       const code = `ES-${new Date().getFullYear()}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
       certBtn.disabled = true;
       certCinema.hidden = false;
+      certCinema.classList.remove("playing");
+      void certCinema.offsetWidth;
+      certCinema.classList.add("playing");
       certCinemaText.textContent = "Validando capacitación…";
       sendCertRecord(name, score, QUESTIONS.length, code);
       setTimeout(() => { certCinemaText.textContent = "Sellando certificado…"; }, 1000);
@@ -1087,6 +1090,7 @@ function avoidWeakOpener(session) {
       setTimeout(() => {
         drawCertificate(name, score, QUESTIONS.length, code);
         certCinema.hidden = true;
+        certCinema.classList.remove("playing");
         certBtn.disabled = false;
       }, 2650);
     });
