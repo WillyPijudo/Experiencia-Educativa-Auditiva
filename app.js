@@ -471,7 +471,21 @@ function playAlerta() {
   const certNameInput = document.getElementById("certName");
   const certError = document.getElementById("certError");
   const certBtn = document.getElementById("certDownload");
+  const certMedal = document.getElementById("certMedal");
+  const certSealMedal = document.getElementById("certSealMedal");
   if (!questionEl) return;
+
+  function medalTier(correct, total) {
+    const pct = total ? correct / total : 0;
+    if (pct >= 0.9) return "tier-gold";
+    if (pct >= 0.7) return "tier-silver";
+    return "tier-bronze";
+  }
+  function applyMedalTier(el, tier) {
+    if (!el) return;
+    el.classList.remove("tier-mint", "tier-gold", "tier-silver", "tier-bronze");
+    el.classList.add(tier);
+  }
 
   function shuffle(arr) {
     const a = arr.slice();
@@ -1033,6 +1047,7 @@ function avoidWeakOpener(session) {
       score === QUESTIONS.length ? "Perfecto. Sabés más de protección auditiva que la mayoría de la planta." :
       score >= QUESTIONS.length - 2 ? "Muy bien — te falta afinar algún detalle, pero la idea general está clara." :
       "Vale la pena repasar el simulador y la sección de EPP para reforzar esos temas.";
+    applyMedalTier(certMedal, medalTier(score, QUESTIONS.length));
   }
 
   function startQuiz() {
@@ -1078,6 +1093,7 @@ function avoidWeakOpener(session) {
       certNameInput.classList.remove("cert-input-error");
       const name = parts.join(" ");
       const code = `ES-${new Date().getFullYear()}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
+      applyMedalTier(certSealMedal, medalTier(score, QUESTIONS.length));
       certBtn.disabled = true;
       certCinema.hidden = false;
       certCinema.classList.remove("playing");

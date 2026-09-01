@@ -518,51 +518,14 @@
     <p class="quiz-result-text" id="quizResultText"></p>
 
     <div class="cert-block">
-      <svg class="cert-block-medal" viewBox="0 0 200 220" aria-hidden="true">
-        <defs>
-          <linearGradient id="ribbonGradLMini" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stop-color="#8fe9ff"/><stop offset="100%" stop-color="#1c6f85"/>
-          </linearGradient>
-          <linearGradient id="ribbonGradRMini" x1="1" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#8fe9ff"/><stop offset="100%" stop-color="#1c6f85"/>
-          </linearGradient>
-          <linearGradient id="medalRimGradMini" x1="0.15" y1="0.1" x2="0.85" y2="0.95">
-            <stop offset="0%" stop-color="#eafff5"/>
-            <stop offset="28%" stop-color="#5df0b8"/>
-            <stop offset="60%" stop-color="#189866"/>
-            <stop offset="85%" stop-color="#0a4a35"/>
-            <stop offset="100%" stop-color="#2fd39a"/>
-          </linearGradient>
-          <radialGradient id="medalFaceGradMini" cx="34%" cy="26%" r="85%">
-            <stop offset="0%" stop-color="#f2fffa"/>
-            <stop offset="35%" stop-color="#3fe6a8"/>
-            <stop offset="75%" stop-color="#149164"/>
-            <stop offset="100%" stop-color="#0a4a35"/>
-          </radialGradient>
-          <clipPath id="medalClipMini"><circle cx="100" cy="100" r="58"/></clipPath>
-        </defs>
-        <g class="medal-ribbons">
-          <path class="medal-ribbon" d="M80 138 L60 200 L82 188 L92 206 L98 144 Z" fill="url(#ribbonGradLMini)"/>
-          <path class="medal-ribbon-crease" d="M83 144 L72 196"/>
-          <path class="medal-ribbon" d="M120 138 L140 200 L118 188 L108 206 L102 144 Z" fill="url(#ribbonGradRMini)"/>
-          <path class="medal-ribbon-crease" d="M117 144 L128 196"/>
-        </g>
-        <circle class="medal-rim" cx="100" cy="100" r="64" fill="url(#medalRimGradMini)"/>
-        <circle class="medal-groove" cx="100" cy="100" r="56"/>
-        <circle class="medal-face" cx="100" cy="100" r="53" fill="url(#medalFaceGradMini)"/>
-        <path class="medal-face-shadow" d="M100 153 A53 53 0 0 0 148 79 A53 53 0 0 1 100 153 Z"/>
-        <ellipse class="medal-highlight" cx="80" cy="76" rx="22" ry="13"/>
-        <g clip-path="url(#medalClipMini)">
-          <rect class="medal-shine" x="50" y="0" width="22" height="210" transform="rotate(24 100 100)"/>
-        </g>
-        <g class="medal-emblem">
-          <rect x="70" y="128" width="9" height="20" rx="3"/>
-          <rect x="84" y="118" width="9" height="30" rx="3"/>
-          <rect x="98" y="122" width="9" height="26" rx="3"/>
-          <rect x="112" y="128" width="9" height="20" rx="3"/>
-          <path class="medal-check" d="M72 98 L92 116 L130 74"/>
-        </g>
-      </svg>
+      <span class="css-medal cert-block-medal tier-mint" id="certMedal" style="--medal-size:96px" aria-hidden="true">
+        <span class="css-medal-ribbon css-medal-ribbon-l"></span>
+        <span class="css-medal-ribbon css-medal-ribbon-r"></span>
+        <span class="css-medal-disc">
+          <span class="css-medal-star"></span>
+          <span class="css-medal-shine"></span>
+        </span>
+      </span>
       <label class="cert-label" for="certName">Tu nombre y apellido, para el certificado</label>
       <input type="text" id="certName" class="cert-input" placeholder="Ej: Ana Gómez" maxlength="40" autocomplete="off">
       <p class="cert-error" id="certError" hidden>Escribí tu nombre <strong>y</strong> tu apellido (con un espacio entre los dos) para poder generar el certificado.</p>
@@ -578,58 +541,21 @@
   <div class="cert-cinema" id="certCinema" hidden>
     <div class="cert-cinema-inner">
       <div class="cert-seal-stage">
-        <svg class="cert-seal-svg" viewBox="0 0 200 220" aria-hidden="true">
-        <defs>
-          <linearGradient id="ribbonGradL" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stop-color="#8fe9ff"/><stop offset="100%" stop-color="#1c6f85"/>
-          </linearGradient>
-          <linearGradient id="ribbonGradR" x1="1" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#8fe9ff"/><stop offset="100%" stop-color="#1c6f85"/>
-          </linearGradient>
-          <linearGradient id="medalRimGrad" x1="0.15" y1="0.1" x2="0.85" y2="0.95">
-            <stop offset="0%" stop-color="#eafff5"/>
-            <stop offset="28%" stop-color="#5df0b8"/>
-            <stop offset="60%" stop-color="#189866"/>
-            <stop offset="85%" stop-color="#0a4a35"/>
-            <stop offset="100%" stop-color="#2fd39a"/>
-          </linearGradient>
-          <radialGradient id="medalFaceGrad" cx="34%" cy="26%" r="85%">
-            <stop offset="0%" stop-color="#f2fffa"/>
-            <stop offset="35%" stop-color="#3fe6a8"/>
-            <stop offset="75%" stop-color="#149164"/>
-            <stop offset="100%" stop-color="#0a4a35"/>
-          </radialGradient>
-          <clipPath id="medalClip"><circle cx="100" cy="100" r="58"/></clipPath>
-        </defs>
-
-        <g class="medal-ribbons">
-          <path class="medal-ribbon" d="M80 138 L60 200 L82 188 L92 206 L98 144 Z" fill="url(#ribbonGradL)"/>
-          <path class="medal-ribbon-crease" d="M83 144 L72 196"/>
-          <path class="medal-ribbon" d="M120 138 L140 200 L118 188 L108 206 L102 144 Z" fill="url(#ribbonGradR)"/>
-          <path class="medal-ribbon-crease" d="M117 144 L128 196"/>
-        </g>
-
-        <circle class="cert-seal-ring" cx="100" cy="100" r="80"/>
-        <circle class="cert-seal-ring-2" cx="100" cy="100" r="66"/>
-
-        <circle class="medal-rim" cx="100" cy="100" r="64" fill="url(#medalRimGrad)"/>
-        <circle class="medal-groove" cx="100" cy="100" r="56"/>
-        <circle class="medal-face" cx="100" cy="100" r="53" fill="url(#medalFaceGrad)"/>
-        <path class="medal-face-shadow" d="M100 153 A53 53 0 0 0 148 79 A53 53 0 0 1 100 153 Z"/>
-        <ellipse class="medal-highlight" cx="80" cy="76" rx="22" ry="13"/>
-
-        <g clip-path="url(#medalClip)">
-          <rect class="medal-shine" x="50" y="0" width="22" height="210" transform="rotate(24 100 100)"/>
-        </g>
-
-        <g class="medal-emblem">
-          <rect x="70" y="128" width="9" height="20" rx="3"/>
-          <rect x="84" y="118" width="9" height="30" rx="3"/>
-          <rect x="98" y="122" width="9" height="26" rx="3"/>
-          <rect x="112" y="128" width="9" height="20" rx="3"/>
-        </g>
-        <path class="cert-seal-check" d="M72 98 L92 116 L130 74"/>
-      </svg>
+        <svg class="cert-seal-rings" viewBox="0 0 200 200" aria-hidden="true">
+          <circle class="cert-seal-ring" cx="100" cy="100" r="80"/>
+          <circle class="cert-seal-ring-2" cx="100" cy="100" r="66"/>
+        </svg>
+        <span class="css-medal cert-seal-medal tier-mint" id="certSealMedal" aria-hidden="true" style="--medal-size:96px">
+          <span class="css-medal-ribbon css-medal-ribbon-l"></span>
+          <span class="css-medal-ribbon css-medal-ribbon-r"></span>
+          <span class="css-medal-disc">
+            <span class="css-medal-star"></span>
+            <span class="css-medal-shine"></span>
+          </span>
+        </span>
+        <svg class="cert-seal-check-svg" viewBox="0 0 200 100" aria-hidden="true">
+          <path class="cert-seal-check" d="M60 46 L92 66 L140 20"/>
+        </svg>
       </div>
       <svg class="cert-sign-svg" viewBox="0 0 320 100" aria-hidden="true">
         <path class="cert-sign-path" d="M20 70 C 40 20, 60 20, 75 55 C 85 78, 95 40, 110 45 C 125 50, 120 75, 140 60 C 160 45, 165 25, 185 40 C 205 55, 200 75, 225 65 C 250 55, 255 30, 280 45 C 295 54, 298 60, 300 62"/>
@@ -668,7 +594,7 @@
           <li><button type="button" data-goto="herramientas"><span class="menu-icon"><span class="micon micon-gauge"><i></i></span></span><span class="menu-label">Herramientas</span></button></li>
           <li><button type="button" data-goto="empresa"><span class="menu-icon"><span class="micon micon-chart"><i></i><i></i><i></i></span></span><span class="menu-label">Por qué importa</span></button></li>
           <li><button type="button" data-goto="cortos"><span class="menu-icon"><span class="micon micon-clapper"><i></i></span></span><span class="menu-label">Cortometrajes</span></button></li>
-          <li><button type="button" data-goto="test"><span class="menu-icon"><span class="micon micon-ribbon"><i></i><i></i></span></span><span class="menu-label">Test y certificado</span></button></li>
+          <li><button type="button" data-goto="test"><span class="menu-icon"><span class="css-medal tier-mint" style="--medal-size:20px"><span class="css-medal-ribbon css-medal-ribbon-l"></span><span class="css-medal-ribbon css-medal-ribbon-r"></span><span class="css-medal-disc"><span class="css-medal-star"></span><span class="css-medal-shine"></span></span></span></span><span class="menu-label">Test y certificado</span></button></li>
         </ul>
       </div>
     </div>
