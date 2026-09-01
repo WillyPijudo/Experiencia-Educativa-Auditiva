@@ -468,7 +468,6 @@ function playAlerta() {
   const resultEl = document.getElementById("quizResult");
   const resultScoreEl = document.getElementById("quizResultScore");
   const resultTextEl = document.getElementById("quizResultText");
-  const retryBtn = document.getElementById("quizRetry");
   const certNameInput = document.getElementById("certName");
   const certError = document.getElementById("certError");
   const certBtn = document.getElementById("certDownload");
@@ -1033,7 +1032,7 @@ function avoidWeakOpener(session) {
     resultTextEl.textContent =
       score === QUESTIONS.length ? "Perfecto. Sabés más de protección auditiva que la mayoría de la planta." :
       score >= QUESTIONS.length - 2 ? "Muy bien — te falta afinar algún detalle, pero la idea general está clara." :
-      "Vale la pena repasar el simulador y la sección de EPP antes de reintentar.";
+      "Vale la pena repasar el simulador y la sección de EPP para reforzar esos temas.";
   }
 
   function startQuiz() {
@@ -1043,8 +1042,6 @@ function avoidWeakOpener(session) {
     resultEl.hidden = true;
     renderQuestion();
   }
-
-  retryBtn.addEventListener("click", startQuiz);
 
   // ---- Certificado descargable (canvas, sin backend) ----
   const certCinema = document.getElementById("certCinema");
